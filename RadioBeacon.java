@@ -62,6 +62,10 @@ class AntennaLocation implements Comparable {
 
         return 0;
     }
+
+    public boolean equals(Object obj) {
+        return compareTo(obj) == 0;      // why do I have to do this myself?
+    }
 }
 
 class Antenna {
@@ -84,8 +88,10 @@ class Antenna {
         log.info("ants="+ants);
         log.info("a="+a);
         log.info("get="+ants.get(a));
+        log.info("getx="+ants.get(new AntennaLocation(null,5541,79,-5155)));
 
-        log.info("compare?"+((new AntennaLocation(null,1,2,3)).compareTo(new AntennaLocation(null,1,2,3))));
+        log.info("equals?"+((new AntennaLocation(null,1,2,3)).equals(new AntennaLocation(null,1,2,3))));
+   
         return ants.get(a);
     }
 
