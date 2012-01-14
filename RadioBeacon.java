@@ -92,19 +92,12 @@ class Antenna {
         log.info("New antenna at " + tipAt);
     }
 
-    // Get Antenna from either tip or base location
-    public static Antenna getAntenna(AntennaLocation a) {
-        Antenna ant = tipsAt.get(a);
-
-        if (ant != null) {
-            return ant;
-        } else {
-            return basesAt.get(a);
-        }
+    public static Antenna getAntennaByTip(Location loc) {
+        return tipsAt.get(new AntennaLocation(loc));
     }
-
-    public static Antenna getAntenna(Location loc) {
-        return getAntenna(new AntennaLocation(loc));
+    
+    public static Antenna getAntennaByBase(Location loc) {
+        return basesAt.get(new AntennaLocation(loc));
     }
 
     public static void destroy(Antenna ant) {
@@ -182,7 +175,7 @@ class BlockPlaceListener extends BlockListener {
         } else if (block.getType() == Material.IRON_FENCE) {
             Block against = event.getBlockAgainst();
 
-            Antenna existingAnt = Antenna.getAntenna(against.getLocation());
+            Antenna existingAnt = Antenna.getAntennaByTip(against.getLocation());
             if (existingAnt != null) {
                 existingAnt.setTipLocation(block.getLocation());
                 player.sendMessage("Extended antenna to " + existingAnt);
@@ -196,14 +189,14 @@ class BlockPlaceListener extends BlockListener {
         World world = block.getWorld();
 
         if (block.getType() == Material.IRON_BLOCK) {
-            Antenna existingAnt = Antenna.getAntenna(block.getLocation());
+            Antenna existingAnt = Antenna.getAntennaByTip(block.getLocation());
             
             if (existingAnt != null) {
                 event.getPlayer().sendMessage("Destroyed antenna " + existingAnt);
                 existingAnt.destroy(existingAnt);
             }
         } else if (block.getType() == Material.IRON_FENCE) {
-            Antenna existingAnt = Antenna.getAntenna(block.getLocation());
+            Antenna existingAnt = Antenna.getAntennaByTip(block.getLocation());
 
             if (existingAnt != null) {
                 // Verify whole length of antenna is intact
@@ -264,12 +257,11 @@ class PlayerInteractListener extends PlayerListener {
 
         log.info("clicked " + event.getClickedBlock() + " using " + event.getItem() + ", action " + event.getAction());
 
-        if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.IRON_FENCE) {
-            Antenna ant = Antenna.getAntenna(block.getLocation());
+        if (block.getType() == Material.IRON_BLOCK) {
+            Antenna ant = Antenna.getAntennaByBase(block.getLocation());
             if (ant != null) {
-                event.getPlayer().sendMessage("This is antenna " + ant);
-                // TODO: also keep iron source block, so don't have to punch top of antenna
-                // (i.e., get working with extended antennas)
+                event.getPlayer().sendMessage("This is antenna base " + ant);
+                // TODO: show tip, height
             }
         }
 
