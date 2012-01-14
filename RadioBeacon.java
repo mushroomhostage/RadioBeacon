@@ -49,7 +49,6 @@ class AntennaLocation implements Comparable {
             return -1;
         }
         AntennaLocation rhs = (AntennaLocation)obj;
-        log.info("compareTo " + this + " vs " + rhs);
 
         // TODO: also compare world
         if (x - rhs.x != 0) {
@@ -65,6 +64,11 @@ class AntennaLocation implements Comparable {
 
     public boolean equals(Object obj) {
         return compareTo(obj) == 0;      // why do I have to do this myself?
+    }
+
+    public int hashCode() {
+        // lame hashing TODO: improve?
+        return x * y * z;   
     }
 }
 
@@ -85,13 +89,6 @@ class Antenna {
     }
 
     public static Antenna getAntenna(AntennaLocation a) {
-        log.info("ants="+ants);
-        log.info("a="+a);
-        log.info("get="+ants.get(a));
-        log.info("getx="+ants.get(new AntennaLocation(null,5541,79,-5155)));
-
-        log.info("equals?"+((new AntennaLocation(null,1,2,3)).equals(new AntennaLocation(null,1,2,3))));
-   
         return ants.get(a);
     }
 
@@ -159,9 +156,7 @@ class BlockPlaceListener extends BlockListener {
         } else if (block.getType() == Material.IRON_FENCE) {
             Block against = event.getBlockAgainst();
 
-            player.sendMessage("Placing against " + against);
             Antenna existingAnt = Antenna.getAntenna(against);
-            player.sendMessage("ea="+existingAnt);
             if (existingAnt != null) {
                 existingAnt.move(block.getLocation());
                 player.sendMessage("Extended antenna to " + existingAnt);
