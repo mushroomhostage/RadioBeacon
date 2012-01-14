@@ -73,23 +73,34 @@ class AntennaLocation implements Comparable {
 }
 
 class Antenna {
-    AntennaLocation at;
+    AntennaLocation tipAt;      // broadcast tip
+    AntennaLocation baseAt;     // control station
     boolean enabled;
 
     static Logger log = Logger.getLogger("Minecraft");
 
-    static ConcurrentHashMap<AntennaLocation, Antenna> ants = new ConcurrentHashMap<AntennaLocation, Antenna>();
+    static ConcurrentHashMap<AntennaLocation, Antenna> tipsAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
+    static ConcurrentHashMap<AntennaLocation, Antenna> basesAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
 
     public Antenna(Location loc) {
-        at = new AntennaLocation(loc);
+        tipAt = new AntennaLocation(loc);
+        baseAt = new AntennaLocation(loc);
         enable();
 
-        ants.put(at, this);
-        log.info("New antenna at " + at);
+        tipsAt.put(tipAt, this);
+        basesAt.put(baseAt, this);
+        log.info("New antenna at " + tipAt);
     }
 
+    // Get Antenna from either tip or base location
     public static Antenna getAntenna(AntennaLocation a) {
-        return ants.get(a);
+        Antenna ant = tipsAt.get(a);
+
+        if (ant != null) {
+            return ant;
+        } else {
+            return basesAt.get(a);
+        }
     }
 
     public static Antenna getAntenna(Location loc) {
@@ -101,37 +112,52 @@ class Antenna {
     }
 
     public static void destroy(Antenna ant) {
-        if (ants.remove(ant.at) == null) {
-            log.info("No antenna at found to destroy at " + ant.at);
+        destroyTip(ant);
+        destroyBase(ant);
+    }
+
+    public static void destroyTip(Antenna ant) {
+        if (tipsAt.remove(ant.tipAt) == null) {
+            throw new RuntimeException("No antenna tip found to destroy at " + ant.tipAt);
+        }
+    }
+
+    public static void destroyBase(Antenna ant) {
+        if (basesAt.remove(ant.baseAt) == null) {
+            throw new RuntimeException("No antenna base found to destroy at " + ant.baseAt);
         }
     }
 
     // Extend or shrink size of the antenna, updating the new center location
-    public void move(Location newLoc) {
-        log.info("Move from "+at+" to + " + newLoc);
-        destroy(this);
+    public void setTipLocation(Location newLoc) {
+        log.info("Move from "+tipAt+" to + " + newLoc);
+        destroyTip(this);
 
-        at = new AntennaLocation(newLoc);
+        tipAt = new AntennaLocation(newLoc);
 
-        ants.put(at, this);
+        tipsAt.put(tipAt, this);
     }
 
-    public Location getLocation() {
-        return at.getLocation();
+    public Location getTipLocation() {
+        return tipAt.getLocation();
+    }
+    
+    public Location getBaseLocation() {
+        return baseAt.getLocation();
     }
 
     public void enable() {
-        log.info("enabled antenna "+at);
+        log.info("enabled antenna "+this);
         enabled = true;
     }
 
     public void disable() {
-        log.info("disabled antenna "+at);
+        log.info("disabled antenna "+this);
         enabled = false;
     }
 
     public String toString() {
-        return "<Antenna at "+at+">";
+        return "<Antenna tip="+tipAt+", base="+baseAt+">";
     }
 }
 
@@ -158,7 +184,7 @@ class BlockPlaceListener extends BlockListener {
 
             Antenna existingAnt = Antenna.getAntenna(against);
             if (existingAnt != null) {
-                existingAnt.move(block.getLocation());
+                existingAnt.setTipLocation(block.getLocation());
                 player.sendMessage("Extended antenna to " + existingAnt);
             }
         }
@@ -169,17 +195,25 @@ class BlockPlaceListener extends BlockListener {
         Block block = event.getBlock();
         World world = block.getWorld();
 
-        if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.IRON_FENCE) {
+        if (block.getType() == Material.IRON_BLOCK) {
+            Antenna existingAnt = Antenna.getAntenna(block);
+            
+            if (existingAnt != null) {
+                event.getPlayer().sendMessage("Destroyed antenna " + existingAnt);
+                existingAnt.destroy(existingAnt);
+            }
+        } else if (block.getType() == Material.IRON_FENCE) {
             Antenna existingAnt = Antenna.getAntenna(block);
 
             if (existingAnt != null) {
-                Location locBelow = existingAnt.getLocation().subtract(0, 1, 0);
+                Location locBelow = existingAnt.getTipLocation().subtract(0, 1, 0);
                 Block blockBelow = world.getBlockAt(locBelow);
 
                 if (blockBelow.getType() == Material.IRON_BLOCK || blockBelow.getType() == Material.IRON_FENCE) {
-                    existingAnt.move(locBelow);
+                    existingAnt.setTipLocation(locBelow);
                     event.getPlayer().sendMessage("Shrunk antenna to " + existingAnt);
                 } else {
+                    // Disconnected from base
                     event.getPlayer().sendMessage("Destroyed antenna " + existingAnt);
                     Antenna.destroy(existingAnt);
                 }
@@ -261,14 +295,15 @@ public class RadioBeacon extends JavaPlugin {
             return false;
         }
 
-        Iterator it = Antenna.ants.entrySet().iterator();
+        Iterator it = Antenna.tipsAt.entrySet().iterator();
         int count = 0;
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             AntennaLocation at = (AntennaLocation)pair.getKey();
             Antenna ant = (Antenna)pair.getValue();
 
-            sender.sendMessage("Antenna at " + ant);
+            sender.sendMessage("Antenna tip at " + ant);
+            // TODO: bases
             count += 1;
         }
         sender.sendMessage("Found " + count + " antennas");
