@@ -82,6 +82,7 @@ class Antenna {
 
     AntennaLocation tipAt;      // broadcast tip
     AntennaLocation baseAt;     // control station
+    String message;
     boolean enabled;
 
 
@@ -208,7 +209,7 @@ class BlockPlaceListener extends BlockListener {
                 existingAnt.setTipLocation(block.getLocation());
                 player.sendMessage("Extended antenna to " + existingAnt);
             }
-        }
+        } 
     }
 
     // Destroying an antenna
@@ -254,8 +255,21 @@ class BlockPlaceListener extends BlockListener {
         }
     }
 
+    public void onSignChange(SignChangeEvent event) {
+        Block block = event.getBlock();
+        String[] text = event.getLines();
+
+        log.info("sign block="+block);
+        log.info("text="+text);
+
+        // TODO: check if adjacent block is antenna base
+        // if so, set message
+    }
+
+    // Currently antennas retain their magnetized properties even when redstone current is removed
+/*
     public void onBlockRedstoneChange(BlockRedstoneEvent event) {
-        /* TODO: find out how to disable antennas, get when block becomes unpowered
+         // TODO: find out how to disable antennas, get when block becomes unpowered
         World world = event.getBlock().getWorld();
 
         if (event.getOldCurrent() == 0) {
@@ -268,8 +282,8 @@ class BlockPlaceListener extends BlockListener {
                 log.info("ant block:"+block);
             }
         }
-        */
     }
+        */
 }
 
 class PlayerInteractListener extends PlayerListener {
@@ -286,7 +300,7 @@ class PlayerInteractListener extends PlayerListener {
         log.info("clicked " + event.getClickedBlock() + " using " + event.getItem() + ", action " + event.getAction());
         // TODO: require compass? ('radio')
 
-        if (block.getType() == Material.IRON_BLOCK) {
+        if (block != null && block.getType() == Material.IRON_BLOCK) {
             Antenna ant = Antenna.getAntennaByBase(block.getLocation());
             if (ant != null) {
                 event.getPlayer().sendMessage("Antenna: " + ant);
@@ -304,7 +318,11 @@ class PlayerInteractListener extends PlayerListener {
 
                     if (ant.withinRange(otherAnt)) {
                         log.info("Received transmission from " + otherAnt);
-                        event.getPlayer().sendMessage("Received transmission " + ant.getDistance(otherAnt) + " m away");
+                        String message = "";
+                        if (otherAnt.message != null) {
+                            message = ": " + otherAnt.message;
+                        }
+                        event.getPlayer().sendMessage("Received transmission " + ant.getDistance(otherAnt) + " m away" + message);
                     }
                 }
             }
@@ -325,9 +343,11 @@ public class RadioBeacon extends JavaPlugin {
 
         getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_PLACE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
         getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_BREAK, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
-        getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.REDSTONE_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
+        getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.SIGN_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
+        //TODO? getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.REDSTONE_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
         
         getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
+
 
 
         log.info("beacon enable");
