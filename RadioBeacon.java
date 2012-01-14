@@ -214,7 +214,18 @@ class PlayerInteractListener extends PlayerListener {
     }
 
     public void onPlayerInteract(PlayerInteractEvent event) {
+        Block block = event.getClickedBlock();
+
         log.info("clicked " + event.getClickedBlock() + " using " + event.getItem() + ", action " + event.getAction());
+
+        if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.IRON_FENCE) {
+            Antenna ant = Antenna.getAntenna(block);
+            if (ant != null) {
+                event.getPlayer().sendMessage("This is antenna " + ant);
+                // TODO: also keep iron source block, so don't have to punch top of antenna
+                // (i.e., get working with extended antennas)
+            }
+        }
 
         // TODO: if on antenna, tune
     }
