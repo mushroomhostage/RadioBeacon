@@ -1,0 +1,4 @@
+name: RadioBeacon
+main: com.exphc.RadioBeacon.RadioBeacon
+version: 1
+
