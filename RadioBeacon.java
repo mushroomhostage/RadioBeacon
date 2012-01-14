@@ -16,24 +16,72 @@ import org.bukkit.entity.*;
 import org.bukkit.command.*;
 import org.bukkit.*;
 
-class Antenna implements Comparable {
-    Location location;
+// Integral location (unlike Bukkit Location)
+class AntennaLocation implements Comparable {
+    World world;
+    int x, y, z;
+
+    public AntennaLocation(World w, int x0, int y0, int z0) {
+        world = w;
+        x = x0;
+        y = y0;
+        z = z0;
+    }
+
+    public AntennaLocation(Location loc) {
+        world = loc.getWorld();
+        x = loc.getBlockX();
+        y = loc.getBlockY();
+        z = loc.getBlockZ();
+    }
+
+    public Location getLocation() {
+        return new Location(world, x, y, z);
+    }
+
+    public String toString() {
+        return x + "," + y + "," + z;
+    }
+
+    public int compareTo(Object obj) {
+        if (!(obj instanceof AntennaLocation)) {
+            return -1;
+        }
+        AntennaLocation rhs = (AntennaLocation)obj;
+
+        if (x - rhs.x != 0) {
+            return x - rhs.x;
+        } else if (y - rhs.y != 0) {
+            return y - rhs.y;
+        } else if (z - rhs.z != 0) {
+            return z - rhs.z;
+        }
+        return 0;
+    }
+}
+
+class Antenna {
+    AntennaLocation at;
     boolean enabled;
 
     static Logger log = Logger.getLogger("Minecraft");
 
-    static ConcurrentHashMap<Location, Antenna> ants = new ConcurrentHashMap<Location, Antenna>();
+    static ConcurrentHashMap<AntennaLocation, Antenna> ants = new ConcurrentHashMap<AntennaLocation, Antenna>();
 
     public Antenna(Location loc) {
-        location = loc;
-        enabled = true;
+        at = new AntennaLocation(loc);
+        enable();
 
-        ants.put(location, this);
-        log.info("New antenna at " + loc);
+        ants.put(at, this);
+        log.info("New antenna at " + at);
+    }
+
+    public static Antenna getAntenna(AntennaLocation a) {
+        return ants.get(a);
     }
 
     public static Antenna getAntenna(Location loc) {
-        return ants.get(loc);
+        return getAntenna(new AntennaLocation(loc));
     }
 
     public static Antenna getAntenna(Block block) {
@@ -41,40 +89,37 @@ class Antenna implements Comparable {
     }
 
     public static void destroy(Antenna ant) {
-        ants.remove(ant.location);
+        if (ants.remove(ant.at) == null) {
+            log.info("No antenna at found to destroy at " + ant.at);
+        }
     }
 
     // Extend or shrink size of the antenna, updating the new center location
     public void move(Location newLoc) {
+        log.info("Move from "+at+" to + " + newLoc);
         destroy(this);
 
-        location = newLoc;
+        at = new AntennaLocation(newLoc);
 
-        ants.put(location, this);
+        ants.put(at, this);
+    }
+
+    public Location getLocation() {
+        return at.getLocation();
     }
 
     public void enable() {
-        log.info("enabled antenna "+location);
+        log.info("enabled antenna "+at);
         enabled = true;
     }
 
     public void disable() {
-        log.info("disabled antenna "+location);
+        log.info("disabled antenna "+at);
         enabled = false;
     }
 
-    public int compareTo(Object obj) {
-        if (!(obj instanceof Antenna)) {
-            return -1;
-        }
-        Antenna rhs = (Antenna)obj;
-
-        //return location.compareTo(rhs.location);
-        return location.hashCode() - rhs.location.hashCode();
-    }
-
     public String toString() {
-        return "<Antenna at "+location.getX()+","+location.getY()+","+location.getZ()+">";
+        return "<Antenna at "+at+">";
     }
 }
 
@@ -117,7 +162,7 @@ class BlockPlaceListener extends BlockListener {
             Antenna existingAnt = Antenna.getAntenna(block);
 
             if (existingAnt != null) {
-                Location locBelow = existingAnt.location.subtract(0, 1, 0);
+                Location locBelow = existingAnt.getLocation().subtract(0, 1, 0);
                 Block blockBelow = world.getBlockAt(locBelow);
 
                 if (blockBelow.getType() == Material.IRON_BLOCK || blockBelow.getType() == Material.IRON_FENCE) {
@@ -198,7 +243,7 @@ public class RadioBeacon extends JavaPlugin {
         int count = 0;
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
-            Location loc = (Location)pair.getKey();
+            AntennaLocation at = (AntennaLocation)pair.getKey();
             Antenna ant = (Antenna)pair.getValue();
 
             sender.sendMessage("Antenna at " + ant);
