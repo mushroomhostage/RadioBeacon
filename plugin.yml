@@ -1,4 +1,7 @@
 name: RadioBeacon
 main: com.exphc.RadioBeacon.RadioBeacon
 version: 1
-
+commands: 
+    ant:
+        description: Manipulate antennas
+        usage: /ant
