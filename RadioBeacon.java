@@ -73,14 +73,17 @@ class AntennaLocation implements Comparable {
 }
 
 class Antenna {
+    static Logger log = Logger.getLogger("Minecraft");
+
+    // TODO: change location to store x,z for lookup, and tip/base (y) separately. 
+    // (Then can detect destroying middle of antenna)
+    static ConcurrentHashMap<AntennaLocation, Antenna> tipsAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
+    static ConcurrentHashMap<AntennaLocation, Antenna> basesAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
+
     AntennaLocation tipAt;      // broadcast tip
     AntennaLocation baseAt;     // control station
     boolean enabled;
 
-    static Logger log = Logger.getLogger("Minecraft");
-
-    static ConcurrentHashMap<AntennaLocation, Antenna> tipsAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
-    static ConcurrentHashMap<AntennaLocation, Antenna> basesAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
 
     public Antenna(Location loc) {
         tipAt = new AntennaLocation(loc);
@@ -139,6 +142,10 @@ class Antenna {
         return tipAt.y - baseAt.y;
     }
 
+    public int getBroadcastRadius() {
+        return getHeight() * 100;  // TODO: configurable, tweak
+    }
+
     public void enable() {
         log.info("enabled antenna "+this);
         enabled = true;
@@ -150,7 +157,24 @@ class Antenna {
     }
 
     public String toString() {
-        return "<Antenna height="+getHeight()+", tip="+tipAt+", base="+baseAt+">";
+        return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", tip="+tipAt+", base="+baseAt+">";
+    }
+
+    public boolean withinRange(Antenna rhs) {
+        // Sphere intersection of broadcast range from tip
+        return distance2(rhs) < square(getBroadcastRadius() + rhs.getBroadcastRadius());
+    }
+
+    // Get distance squared to another antenna tip
+    private int distance2(Antenna rhs) {
+        // d^2 = (x2-x1)^2 + (y2-y1)^2 + (z2-z1)^2
+        return square(tipAt.x - rhs.tipAt.x) +
+               square(tipAt.y - rhs.tipAt.y) + 
+               square(tipAt.z - rhs.tipAt.z);
+    }
+
+    private static int square(int x) {
+        return x * x;
     }
 }
 
@@ -256,16 +280,25 @@ class PlayerInteractListener extends PlayerListener {
         Block block = event.getClickedBlock();
 
         log.info("clicked " + event.getClickedBlock() + " using " + event.getItem() + ", action " + event.getAction());
+        // TODO: require compass? ('radio')
 
         if (block.getType() == Material.IRON_BLOCK) {
             Antenna ant = Antenna.getAntennaByBase(block.getLocation());
             if (ant != null) {
-                event.getPlayer().sendMessage("This is antenna base " + ant);
-                // TODO: show tip, height
+                event.getPlayer().sendMessage("Antenna: " + ant);
+
+                Iterator it = Antenna.tipsAt.entrySet().iterator();
+                int count = 0;
+                while (it.hasNext()) {
+                    Map.Entry pair = (Map.Entry)it.next();
+                    Antenna otherAnt = (Antenna)pair.getValue();
+
+                    if (ant.withinRange(otherAnt)) {
+                        event.getPlayer().sendMessage("Received transmission from " + otherAnt);
+                    }
+                }
             }
         }
-
-        // TODO: if on antenna, tune
     }
 }
 
