@@ -173,6 +173,10 @@ class Antenna {
                square(tipAt.z - rhs.tipAt.z);
     }
 
+    public int getDistance(Antenna rhs) {
+        return (int)Math.sqrt(distance2(rhs));
+    }
+
     private static int square(int x) {
         return x * x;
     }
@@ -293,8 +297,14 @@ class PlayerInteractListener extends PlayerListener {
                     Map.Entry pair = (Map.Entry)it.next();
                     Antenna otherAnt = (Antenna)pair.getValue();
 
+                    if (otherAnt == ant) {
+                        // self-interference
+                        continue;
+                    }
+
                     if (ant.withinRange(otherAnt)) {
-                        event.getPlayer().sendMessage("Received transmission from " + otherAnt);
+                        log.info("Received transmission from " + otherAnt);
+                        event.getPlayer().sendMessage("Received transmission " + ant.getDistance(otherAnt) + " m away");
                     }
                 }
             }
