@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.*;
 import org.bukkit.event.block.*;
+import org.bukkit.event.player.*;
 import org.bukkit.Material.*;
 import org.bukkit.block.*;
 import org.bukkit.entity.*;
@@ -42,11 +43,11 @@ class Antenna implements Comparable {
         Antenna rhs = (Antenna)obj;
 
         //return location.compareTo(rhs.location);
-        // TODO
 
-        return 1;
+        return location.hashCode() - rhs.location.hashCode();
     }
 }
+
 class BlockPlaceListener extends BlockListener {
     Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
@@ -56,10 +57,6 @@ class BlockPlaceListener extends BlockListener {
     }
 
     public void onBlockPlace(BlockPlaceEvent event) {
-        log.info("attempt to place " + event);
-        log.info("player = " + event.getPlayer());
-        log.info("block = " + event.getBlock());
-
         Block block = event.getBlock();
         Player player = event.getPlayer();
 
@@ -73,19 +70,57 @@ class BlockPlaceListener extends BlockListener {
         }
 
     }
+
+    public void onBlockRedstoneChange(BlockRedstoneEvent event) {
+        /* TODO: find out how to disable antennas, get when block becomes unpowered
+        World world = event.getBlock().getWorld();
+
+        if (event.getOldCurrent() == 0) {
+            // TODO: find antenna at location and disable
+            log.info("current turned off at "+event.getBlock());
+
+            for (Antenna ant: plugin.ants) {
+                // TODO: efficiency
+                Block block = world.getBlockAt(ant.location);
+                log.info("ant block:"+block);
+            }
+        }
+        */
+    }
+}
+
+class PlayerInteractListener extends PlayerListener {
+    Logger log = Logger.getLogger("Minecraft");
+    RadioBeacon plugin;
+
+    public PlayerInteractListener(RadioBeacon pl) {
+        plugin = pl;
+    }
+
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        log.info("clicked " + event.getClickedBlock() + " using " + event.getItem() + ", action " + event.getAction());
+
+        // TODO: if on antenna, tune
+    }
 }
 
 public class RadioBeacon extends JavaPlugin {
     Logger log = Logger.getLogger("Minecraft");
     BlockListener blockListener;
+    PlayerListener playerListener;
 
     ConcurrentSkipListSet<Antenna> ants = new ConcurrentSkipListSet<Antenna>();
 
     public void onEnable() {
 
         blockListener = new BlockPlaceListener(this);
+        playerListener = new PlayerInteractListener(this);
 
         getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_PLACE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
+        getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.REDSTONE_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
+        
+        getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
+
 
 
         log.info("beacon enable");
