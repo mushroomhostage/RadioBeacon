@@ -146,6 +146,10 @@ class Antenna {
         return baseAt.getLocation();
     }
 
+    public int getHeight() {
+        return tipAt.y - baseAt.y;
+    }
+
     public void enable() {
         log.info("enabled antenna "+this);
         enabled = true;
@@ -157,7 +161,7 @@ class Antenna {
     }
 
     public String toString() {
-        return "<Antenna tip="+tipAt+", base="+baseAt+">";
+        return "<Antenna height="+getHeight()+", tip="+tipAt+", base="+baseAt+">";
     }
 }
 
@@ -206,16 +210,28 @@ class BlockPlaceListener extends BlockListener {
             Antenna existingAnt = Antenna.getAntenna(block);
 
             if (existingAnt != null) {
-                Location locBelow = existingAnt.getTipLocation().subtract(0, 1, 0);
-                Block blockBelow = world.getBlockAt(locBelow);
+                // Verify whole length of antenna is intact
+                int i = existingAnt.getHeight();
+                boolean destroy = false;
+                while(i > 0) {
+                    Location locBelow = existingAnt.getTipLocation().subtract(0, i, 0); 
+                    Block blockBelow = world.getBlockAt(locBelow);
 
-                if (blockBelow.getType() == Material.IRON_BLOCK || blockBelow.getType() == Material.IRON_FENCE) {
-                    existingAnt.setTipLocation(locBelow);
-                    event.getPlayer().sendMessage("Shrunk antenna to " + existingAnt);
-                } else {
-                    // Disconnected from base
+                    if (blockBelow.getType() != Material.IRON_BLOCK && blockBelow.getType() != Material.IRON_FENCE) {
+                        destroy = true;
+                        break;
+                    }
+                    
+                    i -= 1;
+                }
+                if (destroy) {
+                    // Tip became disconnected from base, so destroy
+                    // Note: won't detect all cases, only if tip is destroyed (not connecting blocks)
                     event.getPlayer().sendMessage("Destroyed antenna " + existingAnt);
                     Antenna.destroy(existingAnt);
+                } else {
+                    existingAnt.setTipLocation(existingAnt.getTipLocation().subtract(0, 1, 0));
+                    event.getPlayer().sendMessage("Shrunk antenna to " + existingAnt);
                 }
             }
         }
