@@ -36,9 +36,17 @@ class Antenna implements Comparable {
         return ants.get(loc);
     }
 
-    // Extend range of the antenna, updating the new center location
-    public void extend(Location newLoc) {
-        ants.remove(this);
+    public static Antenna getAntenna(Block block) {
+        return getAntenna(block.getLocation());
+    }
+
+    public static void destroy(Antenna ant) {
+        ants.remove(ant.location);
+    }
+
+    // Extend or shrink size of the antenna, updating the new center location
+    public void move(Location newLoc) {
+        destroy(this);
 
         location = newLoc;
 
@@ -78,6 +86,7 @@ class BlockPlaceListener extends BlockListener {
         plugin = pl;
     }
 
+    // Building an antenna
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
         Player player = event.getPlayer();
@@ -91,10 +100,33 @@ class BlockPlaceListener extends BlockListener {
             Block against = event.getBlockAgainst();
 
             //player.sendMessage("Placing against " + against);
-            Antenna existingAnt = Antenna.getAntenna(against.getLocation());
+            Antenna existingAnt = Antenna.getAntenna(against);
             if (existingAnt != null) {
-                player.sendMessage("Extended antenna to " + block.getLocation());
-                existingAnt.extend(block.getLocation());
+                existingAnt.move(block.getLocation());
+                player.sendMessage("Extended antenna to " + existingAnt);
+            }
+        }
+    }
+
+    // Destroying an antenna
+    public void onBlockBreak(BlockBreakEvent event) {
+        Block block = event.getBlock();
+        World world = block.getWorld();
+
+        if (block.getType() == Material.IRON_BLOCK || block.getType() == Material.IRON_FENCE) {
+            Antenna existingAnt = Antenna.getAntenna(block);
+
+            if (existingAnt != null) {
+                Location locBelow = existingAnt.location.subtract(0, 1, 0);
+                Block blockBelow = world.getBlockAt(locBelow);
+
+                if (blockBelow.getType() == Material.IRON_BLOCK || blockBelow.getType() == Material.IRON_FENCE) {
+                    existingAnt.move(locBelow);
+                    event.getPlayer().sendMessage("Shrunk antenna to " + existingAnt);
+                } else {
+                    event.getPlayer().sendMessage("Destroyed antenna " + existingAnt);
+                    Antenna.destroy(existingAnt);
+                }
             }
         }
     }
@@ -144,6 +176,7 @@ public class RadioBeacon extends JavaPlugin {
         playerListener = new PlayerInteractListener(this);
 
         getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_PLACE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
+        getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_BREAK, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
         getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.REDSTONE_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
         
         getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
