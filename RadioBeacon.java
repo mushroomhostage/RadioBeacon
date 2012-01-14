@@ -18,6 +18,7 @@ import org.bukkit.*;
 
 // Integral location (unlike Bukkit Location)
 class AntennaLocation implements Comparable {
+    static Logger log = Logger.getLogger("Minecraft");
     World world;
     int x, y, z;
 
@@ -36,7 +37,7 @@ class AntennaLocation implements Comparable {
     }
 
     public Location getLocation() {
-        return new Location(world, x, y, z);
+        return new Location(world, x + 0.5, y + 0.5, z + 0.5);
     }
 
     public String toString() {
@@ -48,7 +49,9 @@ class AntennaLocation implements Comparable {
             return -1;
         }
         AntennaLocation rhs = (AntennaLocation)obj;
+        log.info("compareTo " + this + " vs " + rhs);
 
+        // TODO: also compare world
         if (x - rhs.x != 0) {
             return x - rhs.x;
         } else if (y - rhs.y != 0) {
@@ -56,6 +59,7 @@ class AntennaLocation implements Comparable {
         } else if (z - rhs.z != 0) {
             return z - rhs.z;
         }
+
         return 0;
     }
 }
@@ -77,6 +81,11 @@ class Antenna {
     }
 
     public static Antenna getAntenna(AntennaLocation a) {
+        log.info("ants="+ants);
+        log.info("a="+a);
+        log.info("get="+ants.get(a));
+
+        log.info("compare?"+((new AntennaLocation(null,1,2,3)).compareTo(new AntennaLocation(null,1,2,3))));
         return ants.get(a);
     }
 
@@ -144,8 +153,9 @@ class BlockPlaceListener extends BlockListener {
         } else if (block.getType() == Material.IRON_FENCE) {
             Block against = event.getBlockAgainst();
 
-            //player.sendMessage("Placing against " + against);
+            player.sendMessage("Placing against " + against);
             Antenna existingAnt = Antenna.getAntenna(against);
+            player.sendMessage("ea="+existingAnt);
             if (existingAnt != null) {
                 existingAnt.move(block.getLocation());
                 player.sendMessage("Extended antenna to " + existingAnt);
