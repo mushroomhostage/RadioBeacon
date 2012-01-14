@@ -28,8 +28,21 @@ class Antenna implements Comparable {
         location = loc;
         enabled = true;
 
-        ants.put(loc, this);
+        ants.put(location, this);
         log.info("New antenna at " + loc);
+    }
+
+    public static Antenna getAntenna(Location loc) {
+        return ants.get(loc);
+    }
+
+    // Extend range of the antenna, updating the new center location
+    public void extend(Location newLoc) {
+        ants.remove(this);
+
+        location = newLoc;
+
+        ants.put(location, this);
     }
 
     public void enable() {
@@ -53,7 +66,7 @@ class Antenna implements Comparable {
     }
 
     public String toString() {
-        return location.toString();
+        return "<Antenna at "+location.getX()+","+location.getY()+","+location.getZ()+">";
     }
 }
 
@@ -70,14 +83,20 @@ class BlockPlaceListener extends BlockListener {
         Player player = event.getPlayer();
 
         if (block.getType() == Material.IRON_BLOCK) {
+            // Base material for antenna, if powered
             if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
-                new Antenna(block.getLocation());
+                player.sendMessage("New antenna " + new Antenna(block.getLocation()));
             }
+        } else if (block.getType() == Material.IRON_FENCE) {
+            Block against = event.getBlockAgainst();
 
-            player.sendMessage("powered? " + block.isBlockPowered());
-            player.sendMessage("ind powered?" + block.isBlockIndirectlyPowered());
+            //player.sendMessage("Placing against " + against);
+            Antenna existingAnt = Antenna.getAntenna(against.getLocation());
+            if (existingAnt != null) {
+                player.sendMessage("Extended antenna to " + block.getLocation());
+                existingAnt.extend(block.getLocation());
+            }
         }
-
     }
 
     public void onBlockRedstoneChange(BlockRedstoneEvent event) {
@@ -143,13 +162,16 @@ public class RadioBeacon extends JavaPlugin {
         }
 
         Iterator it = Antenna.ants.entrySet().iterator();
+        int count = 0;
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             Location loc = (Location)pair.getKey();
             Antenna ant = (Antenna)pair.getValue();
 
             sender.sendMessage("Antenna at " + ant);
+            count += 1;
         }
+        sender.sendMessage("Found " + count + " antennas");
 
         return true;
     }
