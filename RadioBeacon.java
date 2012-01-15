@@ -1,6 +1,8 @@
 
 package com.exphc.RadioBeacon;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -84,7 +86,6 @@ class Antenna {
     AntennaLocation tipAt;      // broadcast tip
     AntennaLocation baseAt;     // control station
     String message;
-
 
     public Antenna(Location loc) {
         tipAt = new AntennaLocation(loc);
@@ -203,36 +204,65 @@ class Antenna {
         Antenna.receiveSignals(player, receptionLoc, receptionRadius);
     }
 
-    // Receive signals at any location
+
+    // Receive signals from standing at any location
     static public void receiveSignals(Player player, Location receptionLoc, int receptionRadius) {
         Iterator it = Antenna.tipsAt.entrySet().iterator();
         int count = 0;
+        List<Antenna> nearbyAnts = new ArrayList<Antenna>();
+
+        // TODO: can we get deterministic iteration order? for target index
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             Antenna otherAnt = (Antenna)pair.getValue();
 
             if (otherAnt.withinRange(receptionLoc, receptionRadius)) {
                 log.info("Received transmission from " + otherAnt);
-                String message = "";
-                if (otherAnt.message != null) {
-                    message = ": " + otherAnt.message;
-                }
-    
-                int distance = otherAnt.getDistance(receptionLoc);
-                if (distance == 0) {
-                    // Squelch self-transmissions to avoid interference
-                    continue;
-                }
 
-                player.sendMessage("Received transmission " + distance + " m away" + message);
+                nearbyAnts.add(otherAnt);
+
+                notifySignal(player, receptionLoc, otherAnt);
             }
 
             count += 1;
         }
         if (count == 0) {
             player.sendMessage("No signals received within " + receptionRadius + " m");
+        } else {
+            Integer targetInteger = PlayerInteractListener.playerTargets.get(player);
+            Location targetLoc;
+            int targetInt;
+            if (targetInteger == null) {
+                targetInt = 0;
+            } else {
+                targetInt = targetInteger.intValue() % count;
+            }
+
+            targetLoc = nearbyAnts.get(targetInt).getTipLocation();
+            player.setCompassTarget(targetLoc);
+
+            player.sendMessage("Locked onto signal #" + targetInt);
+            log.info("Targetting " + targetLoc);
+
         }
     }
+
+    // Tell player about an incoming signal from an antenna
+    static private void notifySignal(Player player, Location receptionLoc, Antenna ant) {
+        String message = "";
+        if (ant.message != null) {
+            message = ": " + ant.message;
+        }
+
+        int distance = ant.getDistance(receptionLoc);
+        if (distance == 0) {
+            // Squelch self-transmissions to avoid interference
+            return;
+        }
+
+        player.sendMessage("Received transmission (" + distance + " m)" + message);
+    }
+
 }
 
 class BlockPlaceListener extends BlockListener {
@@ -359,6 +389,9 @@ class PlayerInteractListener extends PlayerListener {
     Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
 
+    // Compass targets index selection
+    static ConcurrentHashMap<Player, Integer> playerTargets = new ConcurrentHashMap<Player, Integer>();
+
     public PlayerInteractListener(RadioBeacon pl) {
         plugin = pl;
     }
@@ -366,6 +399,7 @@ class PlayerInteractListener extends PlayerListener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
         ItemStack item = event.getItem();
+        Player player = event.getPlayer();
 
         if (block != null && block.getType() == Material.IRON_BLOCK) {
             Antenna ant = Antenna.getAntennaByBase(block.getLocation());
@@ -373,16 +407,27 @@ class PlayerInteractListener extends PlayerListener {
                 return;
             }
 
-            ant.receiveSignals(event.getPlayer());
-
+            ant.receiveSignals(player);
+            // TODO: also activate if click the _sign_ adjacent to the base
+            // TODO: and if click anywhere within antenna? maybe not unless holding compass
+        } else if (item != null && item.getType() == Material.COMPASS) {
+            // Increment target index
+            Integer targetInteger = playerTargets.get(player);
+            int targetInt;
+            if (targetInteger == null) {
+                playerTargets.put(player, 0);
+                targetInt = 0;
+            } else {
+                targetInt = targetInteger.intValue() + 1;
+                playerTargets.put(player, targetInt);
+            }
+            player.sendMessage("Tuned radio");
         }
-        // TODO: also activate if click the _sign_ adjacent to the base
-        // TODO: and if click anywhere within antenna? maybe not unless holding compass
     }
 
     public void onItemHeldChange(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
-        ItemStack item = player.getItemInHand();
+        ItemStack item = player.getInventory().getItem(event.getNewSlot());
 
         if (item != null && item.getType() == Material.COMPASS) {
             Antenna.receiveSignalsAtPlayer(player);
