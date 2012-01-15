@@ -1,4 +1,10 @@
 version: 1
 
+# Fixed radios
+initialFixedRadius: 100
+radiusIncreasePerBlock: 100
+
+# Portable radios
+compassRadius: 10
 compassTaskStartDelaySeconds: 0
 compassTaskPeriodSeconds: 20

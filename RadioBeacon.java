@@ -91,6 +91,16 @@ class Antenna {
     AntennaLocation baseAt;     // control station
     String message;
 
+    static int initialFixedRadius;
+    static int radiusIncreasePerBlock;
+    static int compassRadius;
+
+    static void loadConfig(YamlConfiguration config) {
+        initialFixedRadius = config.getInt("initialFixedRadius");
+        radiusIncreasePerBlock = config.getInt("radiusIncreasePerBlock");
+        compassRadius = config.getInt("compassRadius");
+    }
+
     public Antenna(Location loc) {
         tipAt = new AntennaLocation(loc);
         baseAt = new AntennaLocation(loc);
@@ -161,10 +171,8 @@ class Antenna {
     }
 
     public int getBroadcastRadius() {
-        // TODO: configurable, tweak
-        // TODO: configurable base distance (+)
         // TODO: exponential not multiplicative?
-        return 100 + getHeight() * 100;  
+        return initialFixedRadius + getHeight() * radiusIncreasePerBlock;
     }
 
     public String toString() {
@@ -202,8 +210,7 @@ class Antenna {
 
         Location receptionLoc = player.getLocation();
         // Bigger stack of compasses = better reception!
-        // TODO: configurable
-        int receptionRadius = item.getAmount() * 10;   
+        int receptionRadius = item.getAmount() * compassRadius;
 
         Antenna.receiveSignals(player, receptionLoc, receptionRadius, true);
     }
@@ -221,15 +228,14 @@ class Antenna {
             Antenna otherAnt = (Antenna)pair.getValue();
 
             if (otherAnt.withinRange(receptionLoc, receptionRadius)) {
-                log.info("Received transmission from " + otherAnt);
+                //log.info("Received transmission from " + otherAnt);
 
                 nearbyAnts.add(otherAnt);
 
                 notifySignal(player, receptionLoc, otherAnt);
             }
-
-            count += 1;
         }
+        count = nearbyAnts.size();
         if (count == 0) {
             player.sendMessage("No signals within " + receptionRadius + " m");
         } else if (signalLock) {
@@ -247,8 +253,7 @@ class Antenna {
             player.setCompassTarget(targetLoc);
 
             player.sendMessage("Locked onto signal #" + targetInt);
-            log.info("Targetting " + targetLoc);
-
+            //log.info("Targetting " + targetLoc);
         }
     }
 
@@ -480,6 +485,8 @@ class Configurator {
         }
 
         log.info("load config="+config);
+
+        Antenna.loadConfig(config);
 
         return true;
     }
