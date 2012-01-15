@@ -135,8 +135,8 @@ class Antenna {
     }
 
     // Dump to serialized format (to disk)
-    public Map<String,Object> dump() {
-        Map<String,Object> d = new HashMap<String,Object>();
+    public HashMap<String,Object> dump() {
+        HashMap<String,Object> d = new HashMap<String,Object>();
 
         // For simplicity, dump as a flat data structure
 
@@ -278,11 +278,20 @@ class Antenna {
         }
 
         Location receptionLoc = player.getLocation();
+        int receptionRadius = getCompassRadius(item);
+
+        Antenna.receiveSignals(player, receptionLoc, receptionRadius, true);
+    }
+
+    // Get reception radius for a stack of compasses
+    // The default of one compass has a radius of 0, meaning you must be directly within range,
+    // but more compasses can increase the range further
+    static public int getCompassRadius(ItemStack item) {
         // Bigger stack of compasses = better reception!
         int n = item.getAmount() - 1;
         int receptionRadius = Configurator.compassInitialRadius + n * Configurator.compassIncreaseRadius;
 
-        Antenna.receiveSignals(player, receptionLoc, receptionRadius, true);
+        return receptionRadius;
     }
 
 
@@ -505,7 +514,7 @@ class PlayerInteractListener extends PlayerListener {
                 targetInt = targetInteger.intValue() + 1;
                 playerTargets.put(player, targetInt);
             }
-            player.sendMessage("Tuned radio");
+            player.sendMessage("Tuned radio (range " + Antenna.getCompassRadius(item) + " m)");
         }
     }
 
@@ -599,6 +608,8 @@ class Configurator {
         int TICKS_PER_SECOND = 20;
         compassTaskStartDelaySeconds = plugin.getConfig().getInt("compassTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
         compassTaskPeriodSeconds = plugin.getConfig().getInt("compassTaskPeriodSeconds", 20) * TICKS_PER_SECOND;
+        
+        loadAntennas(plugin);
 
 
         return true;
@@ -647,6 +658,60 @@ class Configurator {
         }
         return true;
     }
+    
+    static private YamlConfiguration getAntennaConfig(Plugin plugin) {
+        String filename = plugin.getDataFolder() + System.getProperty("file.separator") + "antennas.yml";
+        File file = new File(filename);
+        return YamlConfiguration.loadConfiguration(file);
+    }
+
+    // Load saved antenna information
+    static public void loadAntennas(Plugin plugin) {
+        YamlConfiguration antennaConfig = getAntennaConfig(plugin);
+
+        List<Map<String,Object>> all;
+
+        if (antennaConfig == null || !antennaConfig.isSet("antennas")) {
+            log.info("No antennas loaded");
+            return;
+        }
+
+        all = antennaConfig.getMapList("antennas");
+
+        int i = 0;
+        for (Map<String,Object> d: all) {
+            new Antenna(d); 
+            i += 1;
+        }
+
+        log.info("Loaded " + i + " antennas");
+    }
+
+    // Save existing antennas
+    static public void saveAntennas(Plugin plugin) {
+        ArrayList<HashMap<String,Object>> all = new ArrayList<HashMap<String,Object>>();
+        YamlConfiguration antennaConfig = getAntennaConfig(plugin);
+
+        Iterator it = Antenna.tipsAt.entrySet().iterator();
+        int i = 0;
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            Antenna ant = (Antenna)pair.getValue();
+    
+            all.add(ant.dump());
+            i += 1;
+        }
+
+        antennaConfig.set("antennas", all);
+
+        try {
+            antennaConfig.save(plugin.getDataFolder() + System.getProperty("file.separator") + "antennas.yml");
+        } catch (IOException e) {
+            log.severe("Failed to save antennas.yml");
+        }
+
+        log.info("Saved " + i + " antennas");
+    }
 }
 
 public class RadioBeacon extends JavaPlugin {
@@ -684,15 +749,12 @@ public class RadioBeacon extends JavaPlugin {
             return;
         }
         receptionTask.taskId = taskId;
-
-
-        // TODO: load saved antennas
-        log.info("beacon enable");
     }
 
     public void onDisable() {
-        // TODO: load saved antennas
-        log.info("beacon disable");
+        Configurator.saveAntennas(this);
+
+        log.info("beacon disabled");
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
@@ -700,17 +762,35 @@ public class RadioBeacon extends JavaPlugin {
             return false;
         }
 
-        boolean reveal = true;
-
-        if (sender instanceof Player) {
-            Player player = (Player)sender;
-            if (!player.hasPermission("radiobeacon.reveal")) {
-                reveal = false;
+        if (args.length > 0) {
+            if (args[0].equals("list")) {
+                listAntennas(sender);
+            } else if (args[0].equals("save")) {
+                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.saveload")) {
+                    Configurator.saveAntennas(this);
+                } else {
+                    sender.sendMessage("You do not have permission to save antennas");
+                }
+            } else if (args[0].equals("load")) {
+                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.saveload")) {
+                    Configurator.loadAntennas(this);
+                } else {
+                    sender.sendMessage("You do not have permission to load antennas");
+                }
             }
+        } else {
+            listAntennas(sender);
         }
 
+        return true;
+    }
+
+    // Show either all antennas information, if have permission, or count only if not
+    private void listAntennas(CommandSender sender) {
         Iterator it = Antenna.tipsAt.entrySet().iterator();
         int count = 0;
+        boolean reveal = !(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.reveal");
+
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             AntennaLocation at = (AntennaLocation)pair.getKey();
@@ -721,8 +801,7 @@ public class RadioBeacon extends JavaPlugin {
             }
             count += 1;
         }
-        sender.sendMessage("There are " + count + " antennas" + (!reveal ? " out there somewhere" : ""));
 
-        return true;
+        sender.sendMessage("There are " + count + " antennas" + (!reveal ? " out there somewhere" : ""));
     }
 }

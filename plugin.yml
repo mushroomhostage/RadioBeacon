@@ -9,7 +9,11 @@ permissions:
     radiobeacon.*:
         children:
             radiobeacon.reveal: true
+            radiobeacon.saveload: true
         default: false
     radiobeacon.reveal:
         description: Allows you to list the coordinates of all antennas
         default: false
+    radiobeacon.saveload:
+        description: Allows you to save and load antennas from disk
+        default: op
