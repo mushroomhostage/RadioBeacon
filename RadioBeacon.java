@@ -514,7 +514,8 @@ class PlayerInteractListener extends PlayerListener {
                 targetInt = targetInteger.intValue() + 1;
                 playerTargets.put(player, targetInt);
             }
-            player.sendMessage("Tuned radio (range " + Antenna.getCompassRadius(item) + " m)");
+            int receptionRadius = Antenna.getCompassRadius(item);
+            player.sendMessage("Tuned radio" + (receptionRadius == 0 ? "" : " (range " + receptionRadius + " m)"));
         }
     }
 
