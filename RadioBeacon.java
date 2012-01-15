@@ -84,13 +84,11 @@ class Antenna {
     AntennaLocation tipAt;      // broadcast tip
     AntennaLocation baseAt;     // control station
     String message;
-    boolean enabled;
 
 
     public Antenna(Location loc) {
         tipAt = new AntennaLocation(loc);
         baseAt = new AntennaLocation(loc);
-        enable();
 
         tipsAt.put(tipAt, this);
         basesAt.put(baseAt, this);
@@ -102,7 +100,6 @@ class Antenna {
     }
     
     public static Antenna getAntennaByBase(Location loc) {
-        log.info("getAntennaByBase"+(new AntennaLocation(loc))+", basesAt="+basesAt);
         return basesAt.get(new AntennaLocation(loc));
     }
 
@@ -110,10 +107,8 @@ class Antenna {
     public static Antenna getAntennaByBaseAdjacent(Location loc) {
         for (int x = -1; x <= 1; x += 1) {
             for (int z = -1; z <= 1; z += 1) {
-                log.info("adjacent"+x+","+z);
                 Antenna ant = getAntennaByBase(loc.clone().add(x+0.5, 0, z+0.5));
                 if (ant != null) {
-                    log.info("FOUND="+ant);
                     return ant;
                 }
             }
@@ -140,7 +135,7 @@ class Antenna {
 
     // Extend or shrink size of the antenna, updating the new center location
     public void setTipLocation(Location newLoc) {
-        log.info("Move from "+tipAt+" to + " + newLoc);
+        log.info("Move tip from "+tipAt+" to + " + newLoc);
         destroyTip(this);
 
         tipAt = new AntennaLocation(newLoc);
@@ -162,19 +157,9 @@ class Antenna {
 
     public int getBroadcastRadius() {
         // TODO: configurable, tweak
-        // TODO: base distance, +
+        // TODO: configurable base distance (+)
         // TODO: exponential not multiplicative?
-        return getHeight() * 100;  
-    }
-
-    public void enable() {
-        log.info("enabled antenna "+this);
-        enabled = true;
-    }
-
-    public void disable() {
-        log.info("disabled antenna "+this);
-        enabled = false;
+        return 100 + getHeight() * 100;  
     }
 
     public String toString() {
@@ -196,7 +181,7 @@ class Antenna {
 
     // Receive antenna signals (to this antenna) and show to player
     public void receiveSignals(Player player) {
-        player.sendMessage("Antenna: " + this);
+        player.sendMessage("Antenna range: " + getBroadcastRadius() + " m");
 
         receiveSignals(player, getTipLocation(), getBroadcastRadius());
     }
@@ -209,23 +194,26 @@ class Antenna {
             Map.Entry pair = (Map.Entry)it.next();
             Antenna otherAnt = (Antenna)pair.getValue();
 
-            // TODO: filter
-            /*
-            if (otherAnt == ant) {
-                // self-interference
-                continue;
-            }
-            */
-
             if (otherAnt.withinRange(receptionLoc, receptionRadius)) {
                 log.info("Received transmission from " + otherAnt);
                 String message = "";
                 if (otherAnt.message != null) {
                     message = ": " + otherAnt.message;
                 }
-                player.sendMessage("Received transmission " + otherAnt.getDistance(receptionLoc) + " m away" + message);
+    
+                int distance = otherAnt.getDistance(receptionLoc);
+                if (distance == 0) {
+                    // Squelch self-transmissions to avoid interference
+                    continue;
+                }
+
+                player.sendMessage("Received transmission " + distance + " m away" + message);
             }
-            // TODO: if none, show no transmission
+
+            count += 1;
+        }
+        if (count == 0) {
+            player.sendMessage("No signals received within " + receptionRadius + " m");
         }
     }
 }
@@ -246,7 +234,8 @@ class BlockPlaceListener extends BlockListener {
         if (block.getType() == Material.IRON_BLOCK) {
             // Base material for antenna, if powered
             if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
-                player.sendMessage("New antenna " + new Antenna(block.getLocation()));
+                new Antenna(block.getLocation());
+                player.sendMessage("New antenna created");
             }
         } else if (block.getType() == Material.IRON_FENCE) {
             Block against = event.getBlockAgainst();
@@ -254,7 +243,7 @@ class BlockPlaceListener extends BlockListener {
             Antenna existingAnt = Antenna.getAntennaByTip(against.getLocation());
             if (existingAnt != null) {
                 existingAnt.setTipLocation(block.getLocation());
-                player.sendMessage("Extended antenna to " + existingAnt.getHeight() + " m");
+                player.sendMessage("Extended antenna range to " + existingAnt.getBroadcastRadius() + " m");
             }
         } 
     }
@@ -296,7 +285,7 @@ class BlockPlaceListener extends BlockListener {
                     Antenna.destroy(ant);
                 } else {
                     ant.setTipLocation(ant.getTipLocation().subtract(0, 1, 0));
-                    event.getPlayer().sendMessage("Shrunk antenna to " + ant.getHeight() + " m");
+                    event.getPlayer().sendMessage("Shrunk antenna range to " + ant.getBroadcastRadius() + " m");
                 }
             }
         } else if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
@@ -317,7 +306,7 @@ class BlockPlaceListener extends BlockListener {
         if (ant != null) {
             ant.message = joinString(text);
         }
-        event.getPlayer().sendMessage("Set transmission message");
+        event.getPlayer().sendMessage("Set transmission message: " + ant.message);
     }
 
     public static String joinString(String[] a) {
