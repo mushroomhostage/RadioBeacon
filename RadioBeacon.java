@@ -209,7 +209,8 @@ class Antenna {
 
         Location receptionLoc = player.getLocation();
         // Bigger stack of compasses = better reception!
-        int receptionRadius = item.getAmount() * Configurator.compassRadius;
+        int n = item.getAmount() - 1;
+        int receptionRadius = Configurator.compassInitialRadius + n * Configurator.compassIncreaseRadius;
 
         Antenna.receiveSignals(player, receptionLoc, receptionRadius, true);
     }
@@ -477,7 +478,8 @@ class Configurator {
     static int fixedBaseMinY;
     static Material fixedBaseMaterial;
     static Material fixedAntennaMaterial;
-    static int compassRadius;
+    static int compassInitialRadius;
+    static int compassIncreaseRadius;
 
 
     static public boolean load() {
@@ -520,7 +522,8 @@ class Configurator {
         }
 
 
-        compassRadius = config.getInt("compassRadius", 10);
+        compassInitialRadius = config.getInt("compassInitialRadius", 0);
+        compassIncreaseRadius = config.getInt("compassIncreaseRadius", 10);
 
         return true;
     }

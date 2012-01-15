@@ -11,6 +11,7 @@ fixedBaseMaterial: iron_block
 fixedAntennaMaterial: iron_fence
 
 # Portable compass radios
-compassRadius: 10
+compassInitialRadius: 0
+compassIncreaseRadius: 10
 compassTaskStartDelaySeconds: 0
 compassTaskPeriodSeconds: 20
