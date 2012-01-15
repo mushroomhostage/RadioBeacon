@@ -186,6 +186,23 @@ class Antenna {
         receiveSignals(player, getTipLocation(), getBroadcastRadius());
     }
 
+    // Receive signals from portable radio held by player
+    static public void receiveSignalsAtPlayer(Player player) {
+        ItemStack item = player.getItemInHand();
+
+        if (item == null || item.getType() != Material.COMPASS) {
+            // Compass = portable radio
+            return;
+        }
+
+        Location receptionLoc = player.getLocation();
+        // Bigger stack of compasses = better reception!
+        // TODO: configurable
+        int receptionRadius = item.getAmount() * 100;   
+
+        Antenna.receiveSignals(player, receptionLoc, receptionRadius);
+    }
+
     // Receive signals at any location
     static public void receiveSignals(Player player, Location receptionLoc, int receptionRadius) {
         Iterator it = Antenna.tipsAt.entrySet().iterator();
@@ -356,18 +373,21 @@ class PlayerInteractListener extends PlayerListener {
                 return;
             }
 
-            /* TODO: change to portable
-            if (item == null || item.getType() != Material.COMPASS) {
-                event.getPlayer().sendMessage("You can use this antenna with a radio (compass)");
-                return;
-            }
-            */
             ant.receiveSignals(event.getPlayer());
 
         }
         // TODO: also activate if click the _sign_ adjacent to the base
         // TODO: and if click anywhere within antenna? maybe not unless holding compass
     }
+
+    public void onItemHeldChange(PlayerItemHeldEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getItemInHand();
+
+        if (item != null && item.getType() == Material.COMPASS) {
+            Antenna.receiveSignalsAtPlayer(player);
+        }
+    } 
 }
 
 
@@ -412,6 +432,7 @@ public class RadioBeacon extends JavaPlugin {
         //TODO? getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.REDSTONE_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
         
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
+        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_ITEM_HELD, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
 
         // in ticks
         long delayBeforeStarting = 0;
