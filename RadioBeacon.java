@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.concurrent.ConcurrentHashMap;
+import java.io.*;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.*;
 import org.bukkit.event.*;
 import org.bukkit.event.block.*;
 import org.bukkit.event.player.*;
@@ -17,6 +19,8 @@ import org.bukkit.block.*;
 import org.bukkit.entity.*;
 import org.bukkit.command.*;
 import org.bukkit.inventory.*;
+import org.bukkit.configuration.*;
+import org.bukkit.configuration.file.*;
 import org.bukkit.*;
 
 // Integral location (unlike Bukkit Location)
@@ -453,6 +457,72 @@ class ReceptionTask implements Runnable {
     }
 }
 
+class Configurator {
+    static Logger log = Logger.getLogger("Minecraft");
+    static Plugin plugin;
+    static YamlConfiguration config;
+
+    static public boolean load() {
+        String filename = plugin.getDataFolder() + System.getProperty("file.separator") + "config.yml";
+        File file = new File(filename);
+        
+        if (!file.exists()) {
+            if (!createNew(file)) {
+                throw new RuntimeException("Could not create new configuration file: " + filename);
+            }
+        }
+
+        config = YamlConfiguration.loadConfiguration(new File(filename));
+        if (config == null) {
+            log.severe("Failed to load configuration file " + filename);
+            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            return false;
+        }
+
+        log.info("load config="+config);
+
+        return true;
+    }
+    
+    static public boolean createNew(File file) {
+        FileWriter fileWriter;
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdir();
+        }
+
+        try {
+            fileWriter = new FileWriter(file);
+        } catch (IOException e) {
+            log.severe("Couldn't write config file: " + e.getMessage());
+            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            return false;
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(plugin.getResource("config.yml"))));
+        BufferedWriter writer = new BufferedWriter(fileWriter);
+        try {
+            String line = reader.readLine();
+            while (line != null) {
+                writer.write(line + System.getProperty("line.separator"));
+                line = reader.readLine();
+            }
+            log.info("Wrote default config");
+        } catch (IOException e) {
+            log.severe("Error writing config: " + e.getMessage());
+            return false;
+        } finally {
+            try {
+                writer.close();
+                reader.close();
+            } catch (IOException e) {
+                log.severe("Error saving config: " + e.getMessage());
+                Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            }
+        }
+        return true;
+    }
+}
+
 public class RadioBeacon extends JavaPlugin {
     Logger log = Logger.getLogger("Minecraft");
     BlockListener blockListener;
@@ -460,6 +530,11 @@ public class RadioBeacon extends JavaPlugin {
     ReceptionTask receptionTask;
 
     public void onEnable() {
+        Configurator.plugin = this;
+        if (!Configurator.load()) {
+            return;
+        }
+
 
         blockListener = new BlockPlaceListener(this);
         playerListener = new PlayerInteractListener(this);
