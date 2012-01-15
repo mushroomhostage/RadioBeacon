@@ -530,9 +530,15 @@ class PlayerInteractListener extends PlayerListener {
 }
 
 
+// Periodically check for nearby signals to receive at portable compass radios
 class ReceptionTask implements Runnable {
     Logger log = Logger.getLogger("Minecraft");
+    Plugin plugin;
     int taskId;
+
+    public ReceptionTask(Plugin p) {
+        plugin = p;
+    }
 
     public void run() {
         for (Player player: Bukkit.getOnlinePlayers()) {
@@ -543,6 +549,8 @@ class ReceptionTask implements Runnable {
                 Antenna.receiveSignalsAtPlayer(player);
             }
         }
+
+        Configurator.saveAntennas(plugin); 
     }
 }
 
@@ -711,6 +719,7 @@ class Configurator {
             log.severe("Failed to save antennas.yml");
         }
 
+        // TODO: disable
         log.info("Saved " + i + " antennas");
     }
 }
@@ -729,7 +738,7 @@ public class RadioBeacon extends JavaPlugin {
 
         blockListener = new BlockPlaceListener(this);
         playerListener = new PlayerInteractListener(this);
-        receptionTask = new ReceptionTask();
+        receptionTask = new ReceptionTask(this);
 
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_PLACE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_BREAK, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
