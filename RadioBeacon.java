@@ -181,26 +181,52 @@ class Antenna {
         return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", tip="+tipAt+", base="+baseAt+">";
     }
 
-    public boolean withinRange(Antenna rhs) {
+    public boolean withinRange(Location receptionLoc, int receptionRadius) {
         // Sphere intersection of broadcast range from tip
-        return distance2(rhs) < square(getBroadcastRadius() + rhs.getBroadcastRadius());
-    }
-
-    // Get distance squared to another antenna tip
-    // TODO: replace with Location.distanceSquared()?
-    private int distance2(Antenna rhs) {
-        // d^2 = (x2-x1)^2 + (y2-y1)^2 + (z2-z1)^2
-        return square(tipAt.x - rhs.tipAt.x) +
-               square(tipAt.y - rhs.tipAt.y) + 
-               square(tipAt.z - rhs.tipAt.z);
+        return getTipLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
     }
 
     private static int square(int x) {
         return x * x;
     }
 
-    public int getDistance(Antenna rhs) {
-        return (int)Math.sqrt(distance2(rhs));
+    public int getDistance(Location receptionLoc) {
+        return (int)Math.sqrt(getTipLocation().distanceSquared(receptionLoc));
+    }
+
+    // Receive antenna signals (to this antenna) and show to player
+    public void receiveSignals(Player player) {
+        player.sendMessage("Antenna: " + this);
+
+        receiveSignals(player, getTipLocation(), getBroadcastRadius());
+    }
+
+    // Receive signals at any location
+    static public void receiveSignals(Player player, Location receptionLoc, int receptionRadius) {
+        Iterator it = Antenna.tipsAt.entrySet().iterator();
+        int count = 0;
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            Antenna otherAnt = (Antenna)pair.getValue();
+
+            // TODO: filter
+            /*
+            if (otherAnt == ant) {
+                // self-interference
+                continue;
+            }
+            */
+
+            if (otherAnt.withinRange(receptionLoc, receptionRadius)) {
+                log.info("Received transmission from " + otherAnt);
+                String message = "";
+                if (otherAnt.message != null) {
+                    message = ": " + otherAnt.message;
+                }
+                player.sendMessage("Received transmission " + otherAnt.getDistance(receptionLoc) + " m away" + message);
+            }
+            // TODO: if none, show no transmission
+        }
     }
 }
 
@@ -228,7 +254,7 @@ class BlockPlaceListener extends BlockListener {
             Antenna existingAnt = Antenna.getAntennaByTip(against.getLocation());
             if (existingAnt != null) {
                 existingAnt.setTipLocation(block.getLocation());
-                player.sendMessage("Extended antenna to " + existingAnt);
+                player.sendMessage("Extended antenna to " + existingAnt.getHeight() + " m");
             }
         } 
     }
@@ -270,7 +296,7 @@ class BlockPlaceListener extends BlockListener {
                     Antenna.destroy(ant);
                 } else {
                     ant.setTipLocation(ant.getTipLocation().subtract(0, 1, 0));
-                    event.getPlayer().sendMessage("Shrunk antenna to " + ant);
+                    event.getPlayer().sendMessage("Shrunk antenna to " + ant.getHeight() + " m");
                 }
             }
         } else if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
@@ -340,36 +366,42 @@ class PlayerInteractListener extends PlayerListener {
             if (ant == null) {
                 return;
             }
-            
+
+            /* TODO: change to portable
             if (item == null || item.getType() != Material.COMPASS) {
                 event.getPlayer().sendMessage("You can use this antenna with a radio (compass)");
                 return;
             }
-            event.getPlayer().sendMessage("Antenna: " + ant);
+            */
+            ant.receiveSignals(event.getPlayer());
 
-            Iterator it = Antenna.tipsAt.entrySet().iterator();
-            int count = 0;
-            while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry)it.next();
-                Antenna otherAnt = (Antenna)pair.getValue();
-
-                if (otherAnt == ant) {
-                    // self-interference
-                    continue;
-                }
-
-                if (ant.withinRange(otherAnt)) {
-                    log.info("Received transmission from " + otherAnt);
-                    String message = "";
-                    if (otherAnt.message != null) {
-                        message = ": " + otherAnt.message;
-                    }
-                    event.getPlayer().sendMessage("Received transmission " + ant.getDistance(otherAnt) + " m away" + message);
-                }
-            }
         }
         // TODO: also activate if click the _sign_ adjacent to the base
         // TODO: and if click anywhere within antenna? maybe not unless holding compass
+    }
+}
+
+
+class ReceptionTask implements Runnable {
+    Logger log = Logger.getLogger("Minecraft");
+    int taskId;
+
+    public void run() {
+        for (Player player: Bukkit.getOnlinePlayers()) {
+            ItemStack item = player.getItemInHand();
+
+            if (item != null && item.getType() == Material.COMPASS) {
+                // Compass = portable radio
+
+                Location receptionLoc = player.getLocation();
+                // Bigger stack of compasses = better reception!
+                // TODO: configurable
+                int receptionRadius = item.getAmount() * 100;   
+
+
+                Antenna.receiveSignals(player, receptionLoc, receptionRadius);
+            }
+        }
     }
 }
 
@@ -377,19 +409,29 @@ public class RadioBeacon extends JavaPlugin {
     Logger log = Logger.getLogger("Minecraft");
     BlockListener blockListener;
     PlayerListener playerListener;
-
+    ReceptionTask receptionTask;
 
     public void onEnable() {
 
         blockListener = new BlockPlaceListener(this);
         playerListener = new PlayerInteractListener(this);
+        receptionTask = new ReceptionTask();
 
-        getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_PLACE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
-        getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_BREAK, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
-        getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.SIGN_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
+        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_PLACE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
+        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_BREAK, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
+        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.SIGN_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
         //TODO? getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.REDSTONE_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
         
-        getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
+        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
+
+        // in ticks
+        long delayBeforeStarting = 0;
+        long period = 5*20;
+        int taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, delayBeforeStarting, period);
+        if (taskId == -1) {
+            throw new RuntimeException("Failed to schedule radio signal reception task");
+        }
+        receptionTask.taskId = taskId;
 
 
         // TODO: load saved antennas
