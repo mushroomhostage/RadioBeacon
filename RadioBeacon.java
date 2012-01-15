@@ -472,8 +472,6 @@ class ReceptionTask implements Runnable {
 
 class Configurator {
     static Logger log = Logger.getLogger("Minecraft");
-    static Plugin plugin;
-    static YamlConfiguration config;
 
     // Configuration options
     static int fixedInitialRadius;
@@ -489,46 +487,36 @@ class Configurator {
     static int compassTaskPeriodSeconds;
 
 
-    static public boolean load() {
-        String filename = plugin.getDataFolder() + System.getProperty("file.separator") + "config.yml";
-        File file = new File(filename);
-        
-        if (!file.exists()) {
-            if (!createNew(file)) {
-                throw new RuntimeException("Could not create new configuration file: " + filename);
-            }
+    static public boolean load(Plugin plugin) {
+        if (plugin.getConfig().getInt("version", 0) < 1) {
+            // Not present, initialize
+            createNew(plugin);
         }
 
-        config = YamlConfiguration.loadConfiguration(new File(filename));
-        if (config == null) {
-            log.severe("Failed to load configuration file " + filename);
-            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
-            return false;
-        }
 
-        fixedInitialRadius = config.getInt("fixedInitialRadius", 100);
-        fixedRadiusIncreasePerBlock = config.getInt("fixedRadiusIncreasePerBlock", 100);
-        fixedMaxHeight = config.getInt("fixedMaxHeightMeters", 0);
+        fixedInitialRadius = plugin.getConfig().getInt("fixedInitialRadius", 100);
+        fixedRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedRadiusIncreasePerBlock", 100);
+        fixedMaxHeight = plugin.getConfig().getInt("fixedMaxHeightMeters", 0);
 
         //if (config.getString("fixedBaseMinY") != null && config.getString("fixedBaseMinY").equals("sealevel")) {  
         // TODO: sea level option? but depends on world
-        fixedBaseMinY = config.getInt("fixedBaseMinY", 0);
+        fixedBaseMinY = plugin.getConfig().getInt("fixedBaseMinY", 0);
 
-        fixedBaseMaterial = Material.matchMaterial(config.getString("fixedBaseMaterial"));
+        fixedBaseMaterial = Material.matchMaterial(plugin.getConfig().getString("fixedBaseMaterial"));
         if (fixedBaseMaterial == null) {
             log.severe("Failed to match fixedBaseMaterial");
             Bukkit.getServer().getPluginManager().disablePlugin(plugin);
             return false;
         }
 
-        fixedAntennaMaterial = Material.matchMaterial(config.getString("fixedAntennaMaterial"));
+        fixedAntennaMaterial = Material.matchMaterial(plugin.getConfig().getString("fixedAntennaMaterial"));
         if (fixedAntennaMaterial == null) {
             log.severe("Failed to match fixedAntennaMaterial");
             Bukkit.getServer().getPluginManager().disablePlugin(plugin);
             return false;
         }
 
-        String f = config.getString("fixedRadiateFrom", "tip");
+        String f = plugin.getConfig().getString("fixedRadiateFrom", "tip");
         if (f.equals("tip")) {
             fixedRadiateFromTip = true;
         } else if (f.equals("base")) {
@@ -540,17 +528,23 @@ class Configurator {
         }          
 
 
-        compassInitialRadius = config.getInt("compassInitialRadius", 0);
-        compassIncreaseRadius = config.getInt("compassIncreaseRadius", 10);
+        compassInitialRadius = plugin.getConfig().getInt("compassInitialRadius", 0);
+        compassIncreaseRadius = plugin.getConfig().getInt("compassIncreaseRadius", 10);
         int TICKS_PER_SECOND = 20;
-        compassTaskStartDelaySeconds = config.getInt("compassTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
-        compassTaskPeriodSeconds = config.getInt("compassTaskPeriodSeconds", 20) * TICKS_PER_SECOND;
+        compassTaskStartDelaySeconds = plugin.getConfig().getInt("compassTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
+        compassTaskPeriodSeconds = plugin.getConfig().getInt("compassTaskPeriodSeconds", 20) * TICKS_PER_SECOND;
 
 
         return true;
     }
-    
-    static public boolean createNew(File file) {
+   
+    // Copy the default config.yml to user's config
+    // This is a direct file copy, unlike Bukkit plugin.getConfig().options().copyDefaults(true),
+    // so it preserves file comments
+    static public boolean createNew(Plugin plugin) {
+        String filename = plugin.getDataFolder() + System.getProperty("file.separator") + "config.yml";
+        File file = new File(filename);
+ 
         FileWriter fileWriter;
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdir();
@@ -596,8 +590,7 @@ public class RadioBeacon extends JavaPlugin {
     ReceptionTask receptionTask;
 
     public void onEnable() {
-        Configurator.plugin = this;
-        if (!Configurator.load()) {
+        if (!Configurator.load(this)) {
             return;
         }
 
