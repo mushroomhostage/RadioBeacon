@@ -302,7 +302,7 @@ class BlockPlaceListener extends BlockListener {
         World world = block.getWorld();
 
         if (block.getType() == Material.IRON_BLOCK) {
-            Antenna ant = Antenna.getAntennaByTip(block.getLocation());
+            Antenna ant = Antenna.getAntennaByBase(block.getLocation());
             
             if (ant != null) {
                 event.getPlayer().sendMessage("Destroyed antenna " + ant);
