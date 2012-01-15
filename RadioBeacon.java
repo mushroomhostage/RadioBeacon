@@ -231,7 +231,7 @@ class Antenna {
             count += 1;
         }
         if (count == 0) {
-            player.sendMessage("No signals received within " + receptionRadius + " m");
+            player.sendMessage("No signals within " + receptionRadius + " m");
         } else if (signalLock) {
             // Player radio compass targetting
             Integer targetInteger = PlayerInteractListener.playerTargets.get(player);
@@ -548,12 +548,16 @@ public class RadioBeacon extends JavaPlugin {
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_ITEM_HELD, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
 
-        // in ticks
-        long delayBeforeStarting = 0;
-        long period = 5*20;
-        int taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, delayBeforeStarting, period);
+        // Compass notification task
+        int TICKS_PER_SECOND = 20;
+        int taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, 
+            Configurator.config.getInt("compassTaskStartDelaySeconds", 0) * TICKS_PER_SECOND, 
+            Configurator.config.getInt("compassTaskPeriodSeconds", 20) * TICKS_PER_SECOND);
+
         if (taskId == -1) {
-            throw new RuntimeException("Failed to schedule radio signal reception task");
+            log.severe("Failed to schedule radio signal reception task");
+            Bukkit.getServer().getPluginManager().disablePlugin(this);
+            return;
         }
         receptionTask.taskId = taskId;
 
