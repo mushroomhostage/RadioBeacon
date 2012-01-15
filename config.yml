@@ -9,6 +9,8 @@ fixedBaseMinY: 0                # must build base above this level
 fixedBaseMaterial: iron_block
 #fixedBaseMaterial: jukebox
 fixedAntennaMaterial: iron_fence
+#fixedRadiateFrom: base
+fixedRadiateFrom: tip
 
 # Portable compass radios
 compassInitialRadius: 0

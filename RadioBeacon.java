@@ -160,6 +160,10 @@ class Antenna {
     public Location getTipLocation() {
         return tipAt.getLocation();
     }
+
+    public Location getSourceLocation() {
+        return Configurator.fixedRadiateFromTip ? getTipLocation() : getBaseLocation();
+    }
     
     public Location getBaseLocation() {
         return baseAt.getLocation();
@@ -179,8 +183,8 @@ class Antenna {
     }
 
     public boolean withinRange(Location receptionLoc, int receptionRadius) {
-        // Sphere intersection of broadcast range from tip
-        return getTipLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
+        // Sphere intersection of broadcast range from source
+        return getSourceLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
     }
 
     private static int square(int x) {
@@ -188,14 +192,14 @@ class Antenna {
     }
 
     public int getDistance(Location receptionLoc) {
-        return (int)Math.sqrt(getTipLocation().distanceSquared(receptionLoc));
+        return (int)Math.sqrt(getSourceLocation().distanceSquared(receptionLoc));
     }
 
     // Receive antenna signals (to this antenna) and show to player
     public void receiveSignals(Player player) {
         player.sendMessage("Antenna range: " + getBroadcastRadius() + " m");
 
-        receiveSignals(player, getTipLocation(), getBroadcastRadius(), false);
+        receiveSignals(player, getSourceLocation(), getBroadcastRadius(), false);
     }
 
     // Receive signals from portable radio held by player
@@ -249,10 +253,10 @@ class Antenna {
                 targetInt = Math.abs(targetInteger.intValue()) % count;
             }
 
-            targetLoc = nearbyAnts.get(targetInt).getTipLocation();
+            targetLoc = nearbyAnts.get(targetInt).getSourceLocation();
             player.setCompassTarget(targetLoc);
 
-            player.sendMessage("Locked onto signal #" + targetInt);
+            player.sendMessage("Locked onto signal #" + (targetInt + 1));
             //log.info("Targetting " + targetLoc);
         }
     }
@@ -478,8 +482,11 @@ class Configurator {
     static int fixedBaseMinY;
     static Material fixedBaseMaterial;
     static Material fixedAntennaMaterial;
+    static boolean fixedRadiateFromTip;
     static int compassInitialRadius;
     static int compassIncreaseRadius;
+    static int compassTaskStartDelaySeconds;
+    static int compassTaskPeriodSeconds;
 
 
     static public boolean load() {
@@ -521,9 +528,24 @@ class Configurator {
             return false;
         }
 
+        String f = config.getString("fixedRadiateFrom", "tip");
+        if (f.equals("tip")) {
+            fixedRadiateFromTip = true;
+        } else if (f.equals("base")) {
+            fixedRadiateFromTip = false;
+        } else {
+            log.severe("fixedRadiateFrom not 'tip' nor 'base'");
+            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            return false;
+        }          
+
 
         compassInitialRadius = config.getInt("compassInitialRadius", 0);
         compassIncreaseRadius = config.getInt("compassIncreaseRadius", 10);
+        int TICKS_PER_SECOND = 20;
+        compassTaskStartDelaySeconds = config.getInt("compassTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
+        compassTaskPeriodSeconds = config.getInt("compassTaskPeriodSeconds", 20) * TICKS_PER_SECOND;
+
 
         return true;
     }
@@ -593,10 +615,9 @@ public class RadioBeacon extends JavaPlugin {
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_ITEM_HELD, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
 
         // Compass notification task
-        int TICKS_PER_SECOND = 20;
         int taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, 
-            Configurator.config.getInt("compassTaskStartDelaySeconds", 0) * TICKS_PER_SECOND, 
-            Configurator.config.getInt("compassTaskPeriodSeconds", 20) * TICKS_PER_SECOND);
+            Configurator.compassTaskStartDelaySeconds,
+            Configurator.compassTaskPeriodSeconds);
 
         if (taskId == -1) {
             log.severe("Failed to schedule radio signal reception task");
