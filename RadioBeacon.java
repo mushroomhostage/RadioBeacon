@@ -14,6 +14,7 @@ import org.bukkit.Material.*;
 import org.bukkit.block.*;
 import org.bukkit.entity.*;
 import org.bukkit.command.*;
+import org.bukkit.inventory.*;
 import org.bukkit.*;
 
 // Integral location (unlike Bukkit Location)
@@ -332,34 +333,38 @@ class PlayerInteractListener extends PlayerListener {
 
     public void onPlayerInteract(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
-
-        log.info("clicked " + event.getClickedBlock() + " using " + event.getItem() + ", action " + event.getAction());
-        // TODO: require compass? ('radio')
+        ItemStack item = event.getItem();
 
         if (block != null && block.getType() == Material.IRON_BLOCK) {
             Antenna ant = Antenna.getAntennaByBase(block.getLocation());
-            if (ant != null) {
-                event.getPlayer().sendMessage("Antenna: " + ant);
+            if (ant == null) {
+                return;
+            }
+            
+            if (item == null || item.getType() != Material.COMPASS) {
+                event.getPlayer().sendMessage("You can use this antenna with a radio (compass)");
+                return;
+            }
+            event.getPlayer().sendMessage("Antenna: " + ant);
 
-                Iterator it = Antenna.tipsAt.entrySet().iterator();
-                int count = 0;
-                while (it.hasNext()) {
-                    Map.Entry pair = (Map.Entry)it.next();
-                    Antenna otherAnt = (Antenna)pair.getValue();
+            Iterator it = Antenna.tipsAt.entrySet().iterator();
+            int count = 0;
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry)it.next();
+                Antenna otherAnt = (Antenna)pair.getValue();
 
-                    if (otherAnt == ant) {
-                        // self-interference
-                        continue;
+                if (otherAnt == ant) {
+                    // self-interference
+                    continue;
+                }
+
+                if (ant.withinRange(otherAnt)) {
+                    log.info("Received transmission from " + otherAnt);
+                    String message = "";
+                    if (otherAnt.message != null) {
+                        message = ": " + otherAnt.message;
                     }
-
-                    if (ant.withinRange(otherAnt)) {
-                        log.info("Received transmission from " + otherAnt);
-                        String message = "";
-                        if (otherAnt.message != null) {
-                            message = ": " + otherAnt.message;
-                        }
-                        event.getPlayer().sendMessage("Received transmission " + ant.getDistance(otherAnt) + " m away" + message);
-                    }
+                    event.getPlayer().sendMessage("Received transmission " + ant.getDistance(otherAnt) + " m away" + message);
                 }
             }
         }
@@ -387,11 +392,12 @@ public class RadioBeacon extends JavaPlugin {
         getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
 
 
-
+        // TODO: load saved antennas
         log.info("beacon enable");
     }
 
     public void onDisable() {
+        // TODO: load saved antennas
         log.info("beacon disable");
     }
 
