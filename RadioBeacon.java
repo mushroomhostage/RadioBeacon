@@ -199,7 +199,7 @@ class Antenna {
         Location receptionLoc = player.getLocation();
         // Bigger stack of compasses = better reception!
         // TODO: configurable
-        int receptionRadius = item.getAmount() * 100;   
+        int receptionRadius = item.getAmount() * 10;   
 
         Antenna.receiveSignals(player, receptionLoc, receptionRadius, true);
     }
