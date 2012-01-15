@@ -184,7 +184,7 @@ class Antenna {
     public void receiveSignals(Player player) {
         player.sendMessage("Antenna range: " + getBroadcastRadius() + " m");
 
-        receiveSignals(player, getTipLocation(), getBroadcastRadius());
+        receiveSignals(player, getTipLocation(), getBroadcastRadius(), false);
     }
 
     // Receive signals from portable radio held by player
@@ -201,12 +201,12 @@ class Antenna {
         // TODO: configurable
         int receptionRadius = item.getAmount() * 100;   
 
-        Antenna.receiveSignals(player, receptionLoc, receptionRadius);
+        Antenna.receiveSignals(player, receptionLoc, receptionRadius, true);
     }
 
 
     // Receive signals from standing at any location
-    static public void receiveSignals(Player player, Location receptionLoc, int receptionRadius) {
+    static public void receiveSignals(Player player, Location receptionLoc, int receptionRadius, boolean signalLock) {
         Iterator it = Antenna.tipsAt.entrySet().iterator();
         int count = 0;
         List<Antenna> nearbyAnts = new ArrayList<Antenna>();
@@ -228,14 +228,15 @@ class Antenna {
         }
         if (count == 0) {
             player.sendMessage("No signals received within " + receptionRadius + " m");
-        } else {
+        } else if (signalLock) {
+            // Player radio compass targetting
             Integer targetInteger = PlayerInteractListener.playerTargets.get(player);
             Location targetLoc;
             int targetInt;
             if (targetInteger == null) {
                 targetInt = 0;
             } else {
-                targetInt = targetInteger.intValue() % count;
+                targetInt = Math.abs(targetInteger.intValue()) % count;
             }
 
             targetLoc = nearbyAnts.get(targetInt).getTipLocation();
@@ -446,14 +447,7 @@ class ReceptionTask implements Runnable {
 
             if (item != null && item.getType() == Material.COMPASS) {
                 // Compass = portable radio
-
-                Location receptionLoc = player.getLocation();
-                // Bigger stack of compasses = better reception!
-                // TODO: configurable
-                int receptionRadius = item.getAmount() * 100;   
-
-
-                Antenna.receiveSignals(player, receptionLoc, receptionRadius);
+                Antenna.receiveSignalsAtPlayer(player);
             }
         }
     }
