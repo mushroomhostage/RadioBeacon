@@ -3,7 +3,9 @@ version: 1
 # Fixed antenna station radios
 fixedInitialRadius: 100
 fixedRadiusIncreasePerBlock: 100
-fixedMaxHeightMeters: 0
+fixedMaxHeightMeters: 0         # clamp antenna height
+fixedBaseMinY: 0                # must build base above this level
+#fixedBaseMinY: 64              # sea level
 
 # Portable compass radios
 compassRadius: 10

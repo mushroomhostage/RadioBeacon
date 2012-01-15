@@ -290,8 +290,12 @@ class BlockPlaceListener extends BlockListener {
         if (block.getType() == Material.IRON_BLOCK) {
             // Base material for antenna, if powered
             if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
-                new Antenna(block.getLocation());
-                player.sendMessage("New antenna created");
+                if (block.getY() < Configurator.fixedBaseMinY) {
+                    player.sendMessage("Not creating antenna below depth of " + Configurator.fixedBaseMinY + " m");
+                } else {
+                    new Antenna(block.getLocation());
+                    player.sendMessage("New antenna created");
+                }
             }
         } else if (block.getType() == Material.IRON_FENCE) {
             Block against = event.getBlockAgainst();
@@ -470,6 +474,7 @@ class Configurator {
     static int fixedInitialRadius;
     static int fixedRadiusIncreasePerBlock;
     static int fixedMaxHeight;
+    static int fixedBaseMinY;
     static int compassRadius;
 
 
@@ -493,6 +498,9 @@ class Configurator {
         fixedInitialRadius = config.getInt("fixedInitialRadius", 100);
         fixedRadiusIncreasePerBlock = config.getInt("fixedRadiusIncreasePerBlock", 100);
         fixedMaxHeight = config.getInt("fixedMaxHeightMeters", 0);
+        //if (config.getString("fixedBaseMinY") != null && config.getString("fixedBaseMinY").equals("sealevel")) {  
+        // TODO: sea level option? but depends on world
+        fixedBaseMinY = config.getInt("fixedBaseMinY", 0);
         compassRadius = config.getInt("compassRadius", 10);
 
         return true;
