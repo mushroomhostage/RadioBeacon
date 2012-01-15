@@ -287,7 +287,7 @@ class BlockPlaceListener extends BlockListener {
         Block block = event.getBlock();
         Player player = event.getPlayer();
 
-        if (block.getType() == Material.IRON_BLOCK) {
+        if (block.getType() == Configurator.fixedBaseMaterial) {
             // Base material for antenna, if powered
             if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
                 if (block.getY() < Configurator.fixedBaseMinY) {
@@ -297,7 +297,7 @@ class BlockPlaceListener extends BlockListener {
                     player.sendMessage("New antenna created");
                 }
             }
-        } else if (block.getType() == Material.IRON_FENCE) {
+        } else if (block.getType() == Configurator.fixedAntennaMaterial) {
             Block against = event.getBlockAgainst();
 
             Antenna existingAnt = Antenna.getAntennaByTip(against.getLocation());
@@ -313,14 +313,14 @@ class BlockPlaceListener extends BlockListener {
         Block block = event.getBlock();
         World world = block.getWorld();
 
-        if (block.getType() == Material.IRON_BLOCK) {
+        if (block.getType() == Configurator.fixedBaseMaterial) {
             Antenna ant = Antenna.getAntennaByBase(block.getLocation());
             
             if (ant != null) {
                 ant.destroy(ant);
                 event.getPlayer().sendMessage("Destroyed antenna");
             }
-        } else if (block.getType() == Material.IRON_FENCE) {
+        } else if (block.getType() == Configurator.fixedAntennaMaterial) {
             Antenna ant = Antenna.getAntennaByTip(block.getLocation());
 
             if (ant != null) {
@@ -331,7 +331,7 @@ class BlockPlaceListener extends BlockListener {
                     Location locBelow = ant.getTipLocation().subtract(0, i, 0); 
                     Block blockBelow = world.getBlockAt(locBelow);
 
-                    if (blockBelow.getType() != Material.IRON_BLOCK && blockBelow.getType() != Material.IRON_FENCE) {
+                    if (blockBelow.getType() != Configurator.fixedBaseMaterial && blockBelow.getType() != Configurator.fixedAntennaMaterial) {
                         destroy = true;
                         break;
                     }
@@ -414,7 +414,7 @@ class PlayerInteractListener extends PlayerListener {
         ItemStack item = event.getItem();
         Player player = event.getPlayer();
 
-        if (block != null && block.getType() == Material.IRON_BLOCK) {
+        if (block != null && block.getType() == Configurator.fixedBaseMaterial) {
             Antenna ant = Antenna.getAntennaByBase(block.getLocation());
             if (ant == null) {
                 return;
@@ -475,6 +475,8 @@ class Configurator {
     static int fixedRadiusIncreasePerBlock;
     static int fixedMaxHeight;
     static int fixedBaseMinY;
+    static Material fixedBaseMaterial;
+    static Material fixedAntennaMaterial;
     static int compassRadius;
 
 
@@ -498,9 +500,26 @@ class Configurator {
         fixedInitialRadius = config.getInt("fixedInitialRadius", 100);
         fixedRadiusIncreasePerBlock = config.getInt("fixedRadiusIncreasePerBlock", 100);
         fixedMaxHeight = config.getInt("fixedMaxHeightMeters", 0);
+
         //if (config.getString("fixedBaseMinY") != null && config.getString("fixedBaseMinY").equals("sealevel")) {  
         // TODO: sea level option? but depends on world
         fixedBaseMinY = config.getInt("fixedBaseMinY", 0);
+
+        fixedBaseMaterial = Material.matchMaterial(config.getString("fixedBaseMaterial"));
+        if (fixedBaseMaterial == null) {
+            log.severe("Failed to match fixedBaseMaterial");
+            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            return false;
+        }
+
+        fixedAntennaMaterial = Material.matchMaterial(config.getString("fixedAntennaMaterial"));
+        if (fixedAntennaMaterial == null) {
+            log.severe("Failed to match fixedAntennaMaterial");
+            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            return false;
+        }
+
+
         compassRadius = config.getInt("compassRadius", 10);
 
         return true;
