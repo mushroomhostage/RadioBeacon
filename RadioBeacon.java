@@ -91,14 +91,16 @@ class Antenna {
     AntennaLocation baseAt;     // control station
     String message;
 
-    static int initialFixedRadius;
-    static int radiusIncreasePerBlock;
+    static int fixedInitialRadius;
+    static int fixedRadiusIncreasePerBlock;
+    static int fixedMaxHeight;
     static int compassRadius;
 
     static void loadConfig(YamlConfiguration config) {
-        initialFixedRadius = config.getInt("initialFixedRadius");
-        radiusIncreasePerBlock = config.getInt("radiusIncreasePerBlock");
-        compassRadius = config.getInt("compassRadius");
+        fixedInitialRadius = config.getInt("fixedInitialRadius", 100);
+        fixedRadiusIncreasePerBlock = config.getInt("fixedRadiusIncreasePerBlock", 100);
+        fixedMaxHeight = config.getInt("fixedMaxHeightMeters", 0);
+        compassRadius = config.getInt("compassRadius", 10);
     }
 
     public Antenna(Location loc) {
@@ -167,12 +169,19 @@ class Antenna {
     }
 
     public int getHeight() {
-        return tipAt.y - baseAt.y;
+        int height = tipAt.y - baseAt.y;
+
+        if (fixedMaxHeight != 0 && height > fixedMaxHeight) {       // TODO: optimize check on setTipLocation() for performance?
+            // Heights above max will not extend range
+            return fixedMaxHeight;
+        } else {
+            return height;
+        }
     }
 
     public int getBroadcastRadius() {
         // TODO: exponential not multiplicative?
-        return initialFixedRadius + getHeight() * radiusIncreasePerBlock;
+        return fixedInitialRadius + getHeight() * fixedRadiusIncreasePerBlock;
     }
 
     public String toString() {

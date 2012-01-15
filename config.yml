@@ -1,10 +1,11 @@
 version: 1
 
-# Fixed radios
-initialFixedRadius: 100
-radiusIncreasePerBlock: 100
+# Fixed antenna station radios
+fixedInitialRadius: 100
+fixedRadiusIncreasePerBlock: 100
+fixedMaxHeightMeters: 0
 
-# Portable radios
+# Portable compass radios
 compassRadius: 10
 compassTaskStartDelaySeconds: 0
 compassTaskPeriodSeconds: 20
