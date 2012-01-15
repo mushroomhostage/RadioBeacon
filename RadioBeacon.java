@@ -101,7 +101,23 @@ class Antenna {
     }
     
     public static Antenna getAntennaByBase(Location loc) {
+        log.info("getAntennaByBase"+(new AntennaLocation(loc))+", basesAt="+basesAt);
         return basesAt.get(new AntennaLocation(loc));
+    }
+
+    // Get an antenna by base directly adjacent to given location
+    public static Antenna getAntennaByBaseAdjacent(Location loc) {
+        for (int x = -1; x <= 1; x += 1) {
+            for (int z = -1; z <= 1; z += 1) {
+                log.info("adjacent"+x+","+z);
+                Antenna ant = getAntennaByBase(loc.clone().add(x+0.5, 0, z+0.5));
+                if (ant != null) {
+                    log.info("FOUND="+ant);
+                    return ant;
+                }
+            }
+        }
+        return null;
     }
 
     public static void destroy(Antenna ant) {
@@ -255,15 +271,24 @@ class BlockPlaceListener extends BlockListener {
         }
     }
 
+    // Signs to set transmission message
     public void onSignChange(SignChangeEvent event) {
         Block block = event.getBlock();
         String[] text = event.getLines();
 
-        log.info("sign block="+block);
-        log.info("text="+text);
+        Antenna ant = Antenna.getAntennaByBaseAdjacent(block.getLocation());
+        if (ant != null) {
+            ant.message = joinString(text);
+        }
+    }
 
-        // TODO: check if adjacent block is antenna base
-        // if so, set message
+    public static String joinString(String[] a) {
+        StringBuffer buffer = new StringBuffer();
+        for (int i = 0; i < a.length; i+= 1) {
+            buffer.append(a[i]);
+            buffer.append(" ");
+        }
+        return buffer.toString();
     }
 
     // Currently antennas retain their magnetized properties even when redstone current is removed
