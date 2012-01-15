@@ -92,18 +92,6 @@ class Antenna {
     int height;
     String message;
 
-    static int fixedInitialRadius;
-    static int fixedRadiusIncreasePerBlock;
-    static int fixedMaxHeight;
-    static int compassRadius;
-
-    static void loadConfig(YamlConfiguration config) {
-        fixedInitialRadius = config.getInt("fixedInitialRadius", 100);
-        fixedRadiusIncreasePerBlock = config.getInt("fixedRadiusIncreasePerBlock", 100);
-        fixedMaxHeight = config.getInt("fixedMaxHeightMeters", 0);
-        compassRadius = config.getInt("compassRadius", 10);
-    }
-
     public Antenna(Location loc) {
         tipAt = new AntennaLocation(loc);
         baseAt = new AntennaLocation(loc);
@@ -161,9 +149,9 @@ class Antenna {
 
         // Calculate height
         height = tipAt.y - baseAt.y;
-        if (fixedMaxHeight != 0 && height > fixedMaxHeight) {
+        if (Configurator.fixedMaxHeight != 0 && height > Configurator.fixedMaxHeight) {
             // Above max will not extend range
-            height = fixedMaxHeight;
+            height = Configurator.fixedMaxHeight;
         } 
 
         tipsAt.put(tipAt, this);
@@ -183,7 +171,7 @@ class Antenna {
 
     public int getBroadcastRadius() {
         // TODO: exponential not multiplicative?
-        return fixedInitialRadius + getHeight() * fixedRadiusIncreasePerBlock;
+        return Configurator.fixedInitialRadius + getHeight() * Configurator.fixedRadiusIncreasePerBlock;
     }
 
     public String toString() {
@@ -221,7 +209,7 @@ class Antenna {
 
         Location receptionLoc = player.getLocation();
         // Bigger stack of compasses = better reception!
-        int receptionRadius = item.getAmount() * compassRadius;
+        int receptionRadius = item.getAmount() * Configurator.compassRadius;
 
         Antenna.receiveSignals(player, receptionLoc, receptionRadius, true);
     }
@@ -325,8 +313,8 @@ class BlockPlaceListener extends BlockListener {
             Antenna ant = Antenna.getAntennaByBase(block.getLocation());
             
             if (ant != null) {
-                event.getPlayer().sendMessage("Destroyed antenna " + ant);
                 ant.destroy(ant);
+                event.getPlayer().sendMessage("Destroyed antenna");
             }
         } else if (block.getType() == Material.IRON_FENCE) {
             Antenna ant = Antenna.getAntennaByTip(block.getLocation());
@@ -478,6 +466,13 @@ class Configurator {
     static Plugin plugin;
     static YamlConfiguration config;
 
+    // Configuration options
+    static int fixedInitialRadius;
+    static int fixedRadiusIncreasePerBlock;
+    static int fixedMaxHeight;
+    static int compassRadius;
+
+
     static public boolean load() {
         String filename = plugin.getDataFolder() + System.getProperty("file.separator") + "config.yml";
         File file = new File(filename);
@@ -495,9 +490,10 @@ class Configurator {
             return false;
         }
 
-        log.info("load config="+config);
-
-        Antenna.loadConfig(config);
+        fixedInitialRadius = config.getInt("fixedInitialRadius", 100);
+        fixedRadiusIncreasePerBlock = config.getInt("fixedRadiusIncreasePerBlock", 100);
+        fixedMaxHeight = config.getInt("fixedMaxHeightMeters", 0);
+        compassRadius = config.getInt("compassRadius", 10);
 
         return true;
     }
