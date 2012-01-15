@@ -160,7 +160,10 @@ class Antenna {
     }
 
     public int getBroadcastRadius() {
-        return getHeight() * 100;  // TODO: configurable, tweak
+        // TODO: configurable, tweak
+        // TODO: base distance, +
+        // TODO: exponential not multiplicative?
+        return getHeight() * 100;  
     }
 
     public void enable() {
@@ -183,6 +186,7 @@ class Antenna {
     }
 
     // Get distance squared to another antenna tip
+    // TODO: replace with Location.distanceSquared()?
     private int distance2(Antenna rhs) {
         // d^2 = (x2-x1)^2 + (y2-y1)^2 + (z2-z1)^2
         return square(tipAt.x - rhs.tipAt.x) +
@@ -190,12 +194,12 @@ class Antenna {
                square(tipAt.z - rhs.tipAt.z);
     }
 
-    public int getDistance(Antenna rhs) {
-        return (int)Math.sqrt(distance2(rhs));
-    }
-
     private static int square(int x) {
         return x * x;
+    }
+
+    public int getDistance(Antenna rhs) {
+        return (int)Math.sqrt(distance2(rhs));
     }
 }
 
@@ -234,21 +238,21 @@ class BlockPlaceListener extends BlockListener {
         World world = block.getWorld();
 
         if (block.getType() == Material.IRON_BLOCK) {
-            Antenna existingAnt = Antenna.getAntennaByTip(block.getLocation());
+            Antenna ant = Antenna.getAntennaByTip(block.getLocation());
             
-            if (existingAnt != null) {
-                event.getPlayer().sendMessage("Destroyed antenna " + existingAnt);
-                existingAnt.destroy(existingAnt);
+            if (ant != null) {
+                event.getPlayer().sendMessage("Destroyed antenna " + ant);
+                ant.destroy(ant);
             }
         } else if (block.getType() == Material.IRON_FENCE) {
-            Antenna existingAnt = Antenna.getAntennaByTip(block.getLocation());
+            Antenna ant = Antenna.getAntennaByTip(block.getLocation());
 
-            if (existingAnt != null) {
+            if (ant != null) {
                 // Verify whole length of antenna is intact
-                int i = existingAnt.getHeight();
+                int i = ant.getHeight();
                 boolean destroy = false;
                 while(i > 0) {
-                    Location locBelow = existingAnt.getTipLocation().subtract(0, i, 0); 
+                    Location locBelow = ant.getTipLocation().subtract(0, i, 0); 
                     Block blockBelow = world.getBlockAt(locBelow);
 
                     if (blockBelow.getType() != Material.IRON_BLOCK && blockBelow.getType() != Material.IRON_FENCE) {
@@ -261,12 +265,18 @@ class BlockPlaceListener extends BlockListener {
                 if (destroy) {
                     // Tip became disconnected from base, so destroy
                     // Note: won't detect all cases, only if tip is destroyed (not connecting blocks)
-                    event.getPlayer().sendMessage("Destroyed antenna " + existingAnt);
-                    Antenna.destroy(existingAnt);
+                    event.getPlayer().sendMessage("Destroyed antenna " + ant);
+                    Antenna.destroy(ant);
                 } else {
-                    existingAnt.setTipLocation(existingAnt.getTipLocation().subtract(0, 1, 0));
-                    event.getPlayer().sendMessage("Shrunk antenna to " + existingAnt);
+                    ant.setTipLocation(ant.getTipLocation().subtract(0, 1, 0));
+                    event.getPlayer().sendMessage("Shrunk antenna to " + ant);
                 }
+            }
+        } else if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
+            Antenna ant = Antenna.getAntennaByBaseAdjacent(block.getLocation());
+            if (ant != null) {
+                event.getPlayer().sendMessage("Cleared antenna message");
+                ant.message = null;
             }
         }
     }
@@ -280,6 +290,7 @@ class BlockPlaceListener extends BlockListener {
         if (ant != null) {
             ant.message = joinString(text);
         }
+        event.getPlayer().sendMessage("Set transmission message");
     }
 
     public static String joinString(String[] a) {
@@ -352,6 +363,8 @@ class PlayerInteractListener extends PlayerListener {
                 }
             }
         }
+        // TODO: also activate if click the _sign_ adjacent to the base
+        // TODO: and if click anywhere within antenna? maybe not unless holding compass
     }
 }
 
