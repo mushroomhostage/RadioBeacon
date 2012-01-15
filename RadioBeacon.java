@@ -89,6 +89,7 @@ class Antenna {
 
     AntennaLocation tipAt;      // broadcast tip
     AntennaLocation baseAt;     // control station
+    int height;
     String message;
 
     static int fixedInitialRadius;
@@ -109,6 +110,7 @@ class Antenna {
 
         tipsAt.put(tipAt, this);
         basesAt.put(baseAt, this);
+        height = 0;
         log.info("New antenna at " + tipAt);
     }
 
@@ -157,6 +159,13 @@ class Antenna {
 
         tipAt = new AntennaLocation(newLoc);
 
+        // Calculate height
+        height = tipAt.y - baseAt.y;
+        if (fixedMaxHeight != 0 && height > fixedMaxHeight) {
+            // Above max will not extend range
+            height = fixedMaxHeight;
+        } 
+
         tipsAt.put(tipAt, this);
     }
 
@@ -169,14 +178,7 @@ class Antenna {
     }
 
     public int getHeight() {
-        int height = tipAt.y - baseAt.y;
-
-        if (fixedMaxHeight != 0 && height > fixedMaxHeight) {       // TODO: optimize check on setTipLocation() for performance?
-            // Heights above max will not extend range
-            return fixedMaxHeight;
-        } else {
-            return height;
-        }
+        return height;
     }
 
     public int getBroadcastRadius() {
