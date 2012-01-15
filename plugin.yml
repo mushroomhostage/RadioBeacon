@@ -2,6 +2,14 @@ name: RadioBeacon
 main: com.exphc.RadioBeacon.RadioBeacon
 version: 1
 commands: 
-    ant:
-        description: Manipulate antennas
-        usage: /ant
+    antennas:
+        description: Show all antennas
+        usage: /antennas
+permissions:
+    radiobeacon.*:
+        children:
+            radiobeacon.listantennas: true
+        default: false
+    radiobeacon.listantennas:
+        description: Allows you to list the coordinates of all antennas
+        default: false

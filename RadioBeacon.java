@@ -579,8 +579,16 @@ public class RadioBeacon extends JavaPlugin {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-        if (!cmd.getName().equalsIgnoreCase("ant")) {
+        if (!cmd.getName().equalsIgnoreCase("antennas")) {
             return false;
+        }
+
+        if (sender instanceof Player) {
+            Player player = (Player)sender;
+            if (!player.hasPermission("radiobeacon.listantennas")) {
+                player.sendMessage("You are not allowed to list antennas");
+                return true;
+            }
         }
 
         Iterator it = Antenna.tipsAt.entrySet().iterator();
@@ -590,11 +598,10 @@ public class RadioBeacon extends JavaPlugin {
             AntennaLocation at = (AntennaLocation)pair.getKey();
             Antenna ant = (Antenna)pair.getValue();
 
-            sender.sendMessage("Antenna tip at " + ant);
-            // TODO: bases
+            sender.sendMessage("Antenna: " + ant);
             count += 1;
         }
-        sender.sendMessage("Found " + count + " antennas");
+        sender.sendMessage("There are " + count + " antennas");
 
         return true;
     }
