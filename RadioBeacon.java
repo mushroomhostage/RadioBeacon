@@ -4,6 +4,8 @@ package com.exphc.RadioBeacon;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +36,14 @@ class AntennaLocation implements Comparable {
         x = x0;
         y = y0;
         z = z0;
+    }
+
+    public AntennaLocation(World w, Object x0, Object y0, Object z0) {
+        world = w;
+        // sorry
+        x = ((Integer)x0).intValue();
+        y = ((Integer)y0).intValue();
+        z = ((Integer)z0).intValue();
     }
 
     public AntennaLocation(Location loc) {
@@ -92,14 +102,62 @@ class Antenna {
     int height;
     String message;
 
+    // Normal antenna creation method
     public Antenna(Location loc) {
-        tipAt = new AntennaLocation(loc);
         baseAt = new AntennaLocation(loc);
+        tipAt = new AntennaLocation(loc);
 
-        tipsAt.put(tipAt, this);
         basesAt.put(baseAt, this);
+        tipsAt.put(tipAt, this);
         height = 0;
-        log.info("New antenna at " + tipAt);
+        log.info("New antenna " + this);
+    }
+
+    // Load from serialized format (from disk)
+    public Antenna(Map<String,Object> d) {
+        World world = Bukkit.getWorld(UUID.fromString((String)d.get("world")));
+        if (world == null) {
+            // TODO: gracefully handle, and skip this antenna (maybe its world was deleted, no big deal)
+            throw new RuntimeException("Antenna loading failed, no world: " + d.get("world"));
+        }
+
+        baseAt = new AntennaLocation(world, d.get("baseX"), d.get("baseY"), d.get("baseZ"));
+        tipAt = new AntennaLocation(world, d.get("tipX"), d.get("tipY"), d.get("tipZ"));
+
+        basesAt.put(baseAt, this);
+        tipsAt.put(tipAt, this);
+
+        setMessage((String)d.get("message"));
+
+        calculateHeight();
+
+        log.info("Loaded antenna " + this);
+    }
+
+    // Dump to serialized format (to disk)
+    public Map<String,Object> dump() {
+        Map<String,Object> d = new HashMap<String,Object>();
+
+        // For simplicity, dump as a flat data structure
+
+        d.put("world", baseAt.world.getUID().toString());
+
+        d.put("baseX", baseAt.x); 
+        d.put("baseY", baseAt.y); 
+        d.put("baseZ", baseAt.z);
+
+        d.put("tipX", tipAt.x); 
+        d.put("tipY", tipAt.y); 
+        d.put("tipZ", tipAt.z); 
+
+        d.put("message", message);
+        // TODO: other user data?
+
+        return d;
+    }
+
+    public String toString() {
+        return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", tip="+tipAt+", base="+baseAt+">";
     }
 
     public static Antenna getAntennaByTip(Location loc) {
@@ -140,6 +198,15 @@ class Antenna {
         }
     }
 
+    // Set or get textual message being broadcasted (may be null for none)
+    public void setMessage(String m) {
+        message = m;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
     // Extend or shrink size of the antenna, updating the new center location
     public void setTipLocation(Location newLoc) {
         log.info("Move tip from "+tipAt+" to + " + newLoc);
@@ -147,14 +214,17 @@ class Antenna {
 
         tipAt = new AntennaLocation(newLoc);
 
-        // Calculate height
+        calculateHeight();
+
+        tipsAt.put(tipAt, this);
+    }
+
+    private void calculateHeight() {
         height = tipAt.y - baseAt.y;
         if (Configurator.fixedMaxHeight != 0 && height > Configurator.fixedMaxHeight) {
             // Above max will not extend range
             height = Configurator.fixedMaxHeight;
         } 
-
-        tipsAt.put(tipAt, this);
     }
 
     public Location getTipLocation() {
@@ -176,10 +246,6 @@ class Antenna {
     public int getBroadcastRadius() {
         // TODO: exponential not multiplicative?
         return Configurator.fixedInitialRadius + getHeight() * Configurator.fixedRadiusIncreasePerBlock;
-    }
-
-    public String toString() {
-        return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", tip="+tipAt+", base="+baseAt+">";
     }
 
     public boolean withinRange(Location receptionLoc, int receptionRadius) {
