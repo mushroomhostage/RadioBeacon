@@ -8,8 +8,8 @@ commands:
 permissions:
     radiobeacon.*:
         children:
-            radiobeacon.listantennas: true
+            radiobeacon.reveal: true
         default: false
-    radiobeacon.listantennas:
+    radiobeacon.reveal:
         description: Allows you to list the coordinates of all antennas
         default: false

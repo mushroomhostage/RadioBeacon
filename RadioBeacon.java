@@ -634,11 +634,12 @@ public class RadioBeacon extends JavaPlugin {
             return false;
         }
 
+        boolean reveal = true;
+
         if (sender instanceof Player) {
             Player player = (Player)sender;
-            if (!player.hasPermission("radiobeacon.listantennas")) {
-                player.sendMessage("You are not allowed to list antennas");
-                return true;
+            if (!player.hasPermission("radiobeacon.reveal")) {
+                reveal = false;
             }
         }
 
@@ -649,10 +650,12 @@ public class RadioBeacon extends JavaPlugin {
             AntennaLocation at = (AntennaLocation)pair.getKey();
             Antenna ant = (Antenna)pair.getValue();
 
-            sender.sendMessage("Antenna: " + ant);
+            if (reveal) {
+                sender.sendMessage("Antenna: " + ant);
+            }
             count += 1;
         }
-        sender.sendMessage("There are " + count + " antennas");
+        sender.sendMessage("There are " + count + " antennas" + (!reveal ? " out there somewhere" : ""));
 
         return true;
     }
