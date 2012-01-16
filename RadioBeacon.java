@@ -25,9 +25,12 @@ import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.*;
 
+class Log {
+    static Logger log = Logger.getLogger("Minecraft");
+}
+
 // Integral location (unlike Bukkit Location)
 class AntennaLocation implements Comparable {
-    static Logger log = Logger.getLogger("Minecraft");
     World world;
     int x, y, z;
 
@@ -157,7 +160,7 @@ class Antenna {
     }
 
     public String toString() {
-        return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", tip="+tipAt+", base="+baseAt+">";
+        return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", tip="+tipAt+", base="+baseAt+", m="+message+">";
     }
 
     public static Antenna getAntennaByTip(Location loc) {
@@ -245,7 +248,16 @@ class Antenna {
 
     public int getBroadcastRadius() {
         // TODO: exponential not multiplicative?
-        return Configurator.fixedInitialRadius + getHeight() * Configurator.fixedRadiusIncreasePerBlock;
+        int radius = Configurator.fixedInitialRadius + getHeight() * Configurator.fixedRadiusIncreasePerBlock;
+
+        if (tipAt.world.hasStorm()) {
+            radius = (int)((double)radius * Configurator.fixedRadiusStormFactor);
+        }
+        if (tipAt.world.isThundering()) {
+            radius = (int)((double)radius * Configurator.fixedRadiusThunderFactor);
+        }
+
+        return radius;
     }
 
     public boolean withinRange(Location receptionLoc, int receptionRadius) {
@@ -428,6 +440,7 @@ class BlockPlaceListener extends BlockListener {
                     event.getPlayer().sendMessage("Shrunk antenna range to " + ant.getBroadcastRadius() + " m");
                 }
             }
+            // TODO: also check when destroyed by explosions or other means!
         } else if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
             Antenna ant = Antenna.getAntennaByBaseAdjacent(block.getLocation());
             if (ant != null) {
@@ -560,6 +573,8 @@ class Configurator {
     // Configuration options
     static int fixedInitialRadius;
     static int fixedRadiusIncreasePerBlock;
+    static double fixedRadiusStormFactor;
+    static double fixedRadiusThunderFactor;
     static int fixedMaxHeight;
     static int fixedBaseMinY;
     static Material fixedBaseMaterial;
@@ -580,6 +595,9 @@ class Configurator {
 
         fixedInitialRadius = plugin.getConfig().getInt("fixedInitialRadius", 100);
         fixedRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedRadiusIncreasePerBlock", 100);
+        fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);
+        fixedRadiusThunderFactor = plugin.getConfig().getDouble("fixedRadiusThunderFactor", 1.1);
+
         fixedMaxHeight = plugin.getConfig().getInt("fixedMaxHeightMeters", 0);
 
         //if (config.getString("fixedBaseMinY") != null && config.getString("fixedBaseMinY").equals("sealevel")) {  
@@ -734,6 +752,8 @@ public class RadioBeacon extends JavaPlugin {
     ReceptionTask receptionTask;
 
     public void onEnable() {
+        log.info(getDescription().getFullName() + " loading");
+
         if (!Configurator.load(this)) {
             return;
         }
@@ -765,9 +785,9 @@ public class RadioBeacon extends JavaPlugin {
     }
 
     public void onDisable() {
-        Configurator.saveAntennas(this);
+        log.info(getDescription().getFullName() + " shutting down");
 
-        log.info("beacon disabled");
+        Configurator.saveAntennas(this);
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {

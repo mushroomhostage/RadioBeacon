@@ -3,6 +3,8 @@ version: 1
 # Fixed antenna station radios
 fixedInitialRadius: 50
 fixedRadiusIncreasePerBlock: 50
+fixedRadiusStormFactor: 0.7     # attenuate/amplify when has storm
+fixedRadiusThunderFactor: 1.1   # attenuate/amplify when is thundering
 fixedMaxHeightMeters: 0         # clamp antenna height
 fixedBaseMinY: 0                # must build base above this level
 #fixedBaseMinY: 64              # sea level
