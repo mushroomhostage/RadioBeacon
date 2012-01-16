@@ -696,19 +696,20 @@ class Configurator {
         log.info("Loaded " + i + " antennas");
     }
 
+    static int lastCount = 0;
     // Save existing antennas
     static public void saveAntennas(Plugin plugin) {
         ArrayList<HashMap<String,Object>> all = new ArrayList<HashMap<String,Object>>();
         YamlConfiguration antennaConfig = getAntennaConfig(plugin);
 
         Iterator it = Antenna.tipsAt.entrySet().iterator();
-        int i = 0;
+        int count = 0;
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             Antenna ant = (Antenna)pair.getValue();
     
             all.add(ant.dump());
-            i += 1;
+            count += 1;
         }
 
         antennaConfig.set("antennas", all);
@@ -719,8 +720,10 @@ class Configurator {
             log.severe("Failed to save antennas.yml");
         }
 
-        // TODO: disable
-        log.info("Saved " + i + " antennas");
+        if (count != lastCount) {
+            log.info("Saved " + count + " antennas");
+            lastCount = count;
+        }
     }
 }
 
