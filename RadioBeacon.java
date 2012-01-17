@@ -525,7 +525,17 @@ class PlayerInteractListener extends PlayerListener {
                 playerTargets.put(player, 0);
                 targetInt = 0;
             } else {
-                targetInt = targetInteger.intValue() + 1;
+                // Tune up or down
+                int delta;
+                if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) {
+                    delta = -1;
+                } else {
+                    delta = 1;
+                }
+                // TODO: show direction in message?
+
+                targetInt = targetInteger.intValue() + delta;
+                // TODO: cycle back if right-click
                 playerTargets.put(player, targetInt);
             }
             int receptionRadius = Antenna.getCompassRadius(item);

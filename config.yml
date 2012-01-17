@@ -18,4 +18,4 @@ fixedRadiateFrom: tip
 compassInitialRadius: 0
 compassIncreaseRadius: 10
 compassTaskStartDelaySeconds: 0
-compassTaskPeriodSeconds: 20
+compassTaskPeriodSeconds: 15
