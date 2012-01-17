@@ -1,4 +1,4 @@
-version: 1
+version: 0
 
 # Fixed antenna station radios
 fixedInitialRadius: 50

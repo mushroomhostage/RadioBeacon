@@ -1,6 +1,6 @@
 name: RadioBeacon
-main: com.exphc.RadioBeacon.RadioBeacon
-version: 1
+main: me.exphc.RadioBeacon.RadioBeacon
+version: 0
 commands: 
     antennas:
         description: Show all antennas

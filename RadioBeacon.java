@@ -1,5 +1,5 @@
 
-package com.exphc.RadioBeacon;
+package me.exphc.RadioBeacon;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -598,7 +598,7 @@ class Configurator {
 
 
     static public boolean load(Plugin plugin) {
-        if (plugin.getConfig().getInt("version", 0) < 1) {
+        if (plugin.getConfig().getInt("version", -1) < 0) {
             // Not present, initialize
             createNew(plugin);
         }
