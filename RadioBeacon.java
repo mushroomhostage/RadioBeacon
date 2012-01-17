@@ -340,10 +340,11 @@ class Antenna {
                 targetInt = Math.abs(targetInteger.intValue()) % count;
             }
 
-            targetLoc = nearbyAnts.get(targetInt).getSourceLocation();
+            Antenna antLoc = nearbyAnts.get(targetInt);
+            targetLoc = antLoc.getSourceLocation();
             player.setCompassTarget(targetLoc);
 
-            player.sendMessage("Locked onto signal #" + (targetInt + 1));
+            player.sendMessage("Locked onto signal at " + antLoc.getDistance(player.getLocation()) + " m: " + antLoc.getMessage());
             //log.info("Targetting " + targetLoc);
         }
     }
