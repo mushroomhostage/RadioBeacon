@@ -459,8 +459,8 @@ class BlockPlaceListener extends BlockListener {
         Antenna ant = Antenna.getAntennaByBaseAdjacent(block.getLocation());
         if (ant != null) {
             ant.message = joinString(text);
+            event.getPlayer().sendMessage("Set transmission message: " + ant.message);
         }
-        event.getPlayer().sendMessage("Set transmission message: " + ant.message);
     }
 
     public static String joinString(String[] a) {
