@@ -124,6 +124,8 @@ class Antenna {
 
         calculateHeight();
 
+        xz2Ant.put(xz, this);
+
         log.info("Loaded antenna " + this);
     }
 
@@ -257,7 +259,6 @@ class Antenna {
         // TODO: exponential not multiplicative?
         int radius = Configurator.fixedInitialRadius + getHeight() * Configurator.fixedRadiusIncreasePerBlock;
 
-        log.info("getBroadcastRadius, xz="+xz);
         if (xz.world.hasStorm()) {
             radius = (int)((double)radius * Configurator.fixedRadiusStormFactor);
         }
