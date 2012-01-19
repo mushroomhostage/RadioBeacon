@@ -425,6 +425,10 @@ class BlockPlaceListener extends BlockListener {
                     new Antenna(block.getLocation());
                     player.sendMessage("New antenna created");
                 }
+            } else {
+                if (Configurator.fixedUnpoweredNagMessage != null && !Configurator.fixedUnpoweredNagMessage.equals("")) {
+                    player.sendMessage(Configurator.fixedUnpoweredNagMessage);
+                }
             }
         } else if (block.getType() == Configurator.fixedAntennaMaterial) {
             Block against = event.getBlockAgainst();
@@ -657,6 +661,7 @@ class Configurator {
     static Material fixedBaseMaterial;
     static Material fixedAntennaMaterial;
     static boolean fixedRadiateFromTip;
+    static String fixedUnpoweredNagMessage;
 
     static int mobileInitialRadius;
     static int mobileIncreaseRadius;
@@ -716,6 +721,9 @@ class Configurator {
             Bukkit.getServer().getPluginManager().disablePlugin(plugin);
             return false;
         }          
+
+        fixedUnpoweredNagMessage = plugin.getConfig().getString("fixedUnpoweredNagMessage", "Tip: remove and place this block near redstone current to build an antenna");
+
 
 
         mobileInitialRadius = plugin.getConfig().getInt("mobileInitialRadius", 0);

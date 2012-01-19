@@ -20,6 +20,8 @@ fixedBaseMaterial: iron_block
 fixedAntennaMaterial: iron_fence
 #fixedRadiateFrom: base
 fixedRadiateFrom: tip
+fixedUnpoweredNagMessage: 'Tip: remove and place this block near redstone current to build an antenna'
+#fixedUnpoweredNagMessage: ''
 
 # Mobile compass radios
 mobileInitialRadius: 0
