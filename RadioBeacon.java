@@ -568,13 +568,15 @@ class PlayerInteractListener extends PlayerListener {
             int receptionRadius = Antenna.getCompassRadius(item);
             player.sendMessage("Tuned radio" + (receptionRadius == 0 ? "" : " (range " + receptionRadius + " m)"));
 
-        // TODO: remove
+        }
         // For testing purposes, strike lightning
-        } else if (item != null && item.getType() == Material.DIAMOND_SWORD && block != null && event.getAction() == Action.LEFT_CLICK_BLOCK) {
+        /*
+        else if (item != null && item.getType() == Material.DIAMOND_SWORD && block != null && event.getAction() == Action.LEFT_CLICK_BLOCK) {
             World world = block.getWorld();
 
             world.strikeLightning(block.getLocation());
         }
+        */
     }
 
     public void onItemHeldChange(PlayerItemHeldEvent event) {
@@ -653,8 +655,8 @@ class Configurator {
 
         fixedBlastSetFire = plugin.getConfig().getBoolean("fixedBlastSetFire", true);
         fixedBlastPowerInitial = (float)plugin.getConfig().getDouble("fixedBlastPowerInitial", 2);
-        fixedBlastPowerIncreasePerBlock = (float)plugin.getConfig().getDouble("fixedBlastPowerIncreasePerBlock", 1);
-        fixedBlastPowerMax = (float)plugin.getConfig().getDouble("fixedBlastPowerMax", 6);
+        fixedBlastPowerIncreasePerBlock = (float)plugin.getConfig().getDouble("fixedBlastPowerIncreasePerBlock", 0.4);
+        fixedBlastPowerMax = (float)plugin.getConfig().getDouble("fixedBlastPowerMax", 10);
 
 
         fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);

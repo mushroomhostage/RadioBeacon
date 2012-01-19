@@ -6,9 +6,9 @@ fixedRadiusIncreasePerBlock: 50
 fixedLightningAttractRadiusInitial: 10
 fixedLightningAttractRadiusIncreasePerBlock: 0
 # Explosive power when tower struck by lightning (ghast fireball=1, creeper=2, TNT=4)
-fixedBlastPowerInitial: 2       
+fixedBlastPowerInitial: 2
 fixedBlastPowerIncreasePerBlock: 0.4
-fixedBlastPowerMax: 6
+fixedBlastPowerMax: 10
 fixedBlastSetFire: true
 fixedRadiusStormFactor: 0.7     # attenuate/amplify when has storm
 fixedRadiusThunderFactor: 1.1   # attenuate/amplify when is thundering
