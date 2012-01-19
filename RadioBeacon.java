@@ -261,6 +261,13 @@ class Antenna {
         return radius;
     }
 
+    public int getLightningAttractRadius() {
+        int unclampedHeight = tipAt.y - baseAt.y;       // not limited, unlike getHeight()
+
+
+        return Configurator.fixedLightningAttractRadiusInitial + unclampedHeight * Configurator.fixedLightningAttractRadiusIncreasePerBlock;
+    }
+
     public boolean withinRange(Location receptionLoc, int receptionRadius) {
         // Sphere intersection of broadcast range from source
         return getSourceLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
@@ -276,7 +283,7 @@ class Antenna {
 
     // Receive antenna signals (to this antenna) and show to player
     public void receiveSignals(Player player) {
-        player.sendMessage("Antenna range: " + getBroadcastRadius() + " m");
+        player.sendMessage("Antenna range: " + getBroadcastRadius() + " m, lightning attraction: " + getLightningAttractRadius() + " m");
 
         receiveSignals(player, getSourceLocation(), getBroadcastRadius(), false);
     }
@@ -592,7 +599,8 @@ class Configurator {
     // Configuration options
     static int fixedInitialRadius;
     static int fixedRadiusIncreasePerBlock;
-    static int fixedLightningAttractRadius;
+    static int fixedLightningAttractRadiusInitial;
+    static int fixedLightningAttractRadiusIncreasePerBlock;
     static double fixedRadiusStormFactor;
     static double fixedRadiusThunderFactor;
     static int fixedMaxHeight;
@@ -617,7 +625,8 @@ class Configurator {
         fixedInitialRadius = plugin.getConfig().getInt("fixedInitialRadius", 100);
         fixedRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedRadiusIncreasePerBlock", 100);
         
-        fixedLightningAttractRadius = plugin.getConfig().getInt("fixedLightningAttractRadius", 10);
+        fixedLightningAttractRadiusInitial = plugin.getConfig().getInt("fixedLightningAttractRadiusInitial", 10);
+        fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedLightningAttractRadiusIncreasePerBlock", 10);
 
         fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);
         fixedRadiusThunderFactor = plugin.getConfig().getDouble("fixedRadiusThunderFactor", 1.1);
@@ -797,8 +806,7 @@ class RadioWeatherListener extends WeatherListener {
             strikeLocation.setY(strikeLocation.getY());
 
             // Within strike range?
-            // TODO: varying strike radius
-            if (ant.withinRange(strikeLocation, Configurator.fixedLightningAttractRadius)) {
+            if (ant.withinRange(strikeLocation, ant.getLightningAttractRadius())) {
                 log.info("striking antenna "+ant);
                 world.strikeLightning(ant.baseAt.getLocation());
 
