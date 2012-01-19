@@ -30,6 +30,7 @@ class Log {
     static Logger log = Logger.getLogger("Minecraft");
 }
 
+
 // Integral location (unlike Bukkit Location)
 class AntennaLocation implements Comparable {
     World world;
@@ -92,6 +93,58 @@ class AntennaLocation implements Comparable {
         return x * y * z;   
     }
 }
+
+// Flat location TODO refactor
+class AntennaXZ implements Comparable {
+    World world;
+    int x, z;
+
+    public AntennaXZ(World w, int x0,  int z0) {
+        world = w;
+        x = x0;
+        z = z0;
+    }
+
+    public AntennaXZ(Location loc) {
+        world = loc.getWorld();
+        x = loc.getBlockX();
+        z = loc.getBlockZ();
+    }
+
+    public Location getLocation(double y) {
+        return new Location(world, x + 0.5, y, z + 0.5);
+    }
+
+    public String toString() {
+        return x + "," + z;
+    }
+
+    public int compareTo(Object obj) {
+        if (!(obj instanceof AntennaLocation)) {
+            return -1;
+        }
+        AntennaLocation rhs = (AntennaLocation)obj;
+
+        // TODO: also compare world
+        if (x - rhs.x != 0) {
+            return x - rhs.x;
+        } else if (z - rhs.z != 0) {
+            return z - rhs.z;
+        }
+
+        return 0;
+    }
+
+    public boolean equals(Object obj) {
+        return compareTo(obj) == 0;      // why do I have to do this myself?
+    }
+
+    public int hashCode() {
+        // lame hashing TODO: improve?
+        return x * z;
+    }
+}
+
 
 class Antenna {
     static Logger log = Logger.getLogger("Minecraft");
