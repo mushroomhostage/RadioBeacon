@@ -21,8 +21,8 @@ fixedAntennaMaterial: iron_fence
 #fixedRadiateFrom: base
 fixedRadiateFrom: tip
 
-# Portable compass radios
-compassInitialRadius: 0
-compassIncreaseRadius: 10
-compassTaskStartDelaySeconds: 0
-compassTaskPeriodSeconds: 15
+# Mobile compass radios
+mobileInitialRadius: 0
+mobileIncreaseRadius: 10
+mobileTaskStartDelaySeconds: 0
+mobileTaskPeriodSeconds: 15

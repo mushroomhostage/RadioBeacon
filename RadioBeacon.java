@@ -316,12 +316,12 @@ class Antenna {
         receiveSignals(player, getSourceLocation(), getBroadcastRadius(), false);
     }
 
-    // Receive signals from portable radio held by player
+    // Receive signals from mobile radio held by player
     static public void receiveSignalsAtPlayer(Player player) {
         ItemStack item = player.getItemInHand();
 
         if (item == null || item.getType() != Material.COMPASS) {
-            // Compass = portable radio
+            // Compass = mobile radio
             return;
         }
 
@@ -337,7 +337,7 @@ class Antenna {
     static public int getCompassRadius(ItemStack item) {
         // Bigger stack of compasses = better reception!
         int n = item.getAmount() - 1;
-        int receptionRadius = Configurator.compassInitialRadius + n * Configurator.compassIncreaseRadius;
+        int receptionRadius = Configurator.mobileInitialRadius + n * Configurator.mobileIncreaseRadius;
 
         return receptionRadius;
     }
@@ -600,7 +600,7 @@ class PlayerInteractListener extends PlayerListener {
 }
 
 
-// Periodically check for nearby signals to receive at portable compass radios
+// Periodically check for nearby signals to receive at mobile compass radios
 class ReceptionTask implements Runnable {
     Logger log = Logger.getLogger("Minecraft");
     Plugin plugin;
@@ -615,7 +615,7 @@ class ReceptionTask implements Runnable {
             ItemStack item = player.getItemInHand();
 
             if (item != null && item.getType() == Material.COMPASS) {
-                // Compass = portable radio
+                // Compass = mobile radio
                 Antenna.receiveSignalsAtPlayer(player);
             }
         }
@@ -644,10 +644,10 @@ class Configurator {
     static Material fixedAntennaMaterial;
     static boolean fixedRadiateFromTip;
 
-    static int compassInitialRadius;
-    static int compassIncreaseRadius;
-    static int compassTaskStartDelaySeconds;
-    static int compassTaskPeriodSeconds;
+    static int mobileInitialRadius;
+    static int mobileIncreaseRadius;
+    static int mobileTaskStartDelaySeconds;
+    static int mobileTaskPeriodSeconds;
 
 
     static public boolean load(Plugin plugin) {
@@ -704,11 +704,11 @@ class Configurator {
         }          
 
 
-        compassInitialRadius = plugin.getConfig().getInt("compassInitialRadius", 0);
-        compassIncreaseRadius = plugin.getConfig().getInt("compassIncreaseRadius", 10);
+        mobileInitialRadius = plugin.getConfig().getInt("mobileInitialRadius", 0);
+        mobileIncreaseRadius = plugin.getConfig().getInt("mobileIncreaseRadius", 10);
         int TICKS_PER_SECOND = 20;
-        compassTaskStartDelaySeconds = plugin.getConfig().getInt("compassTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
-        compassTaskPeriodSeconds = plugin.getConfig().getInt("compassTaskPeriodSeconds", 20) * TICKS_PER_SECOND;
+        mobileTaskStartDelaySeconds = plugin.getConfig().getInt("mobileTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
+        mobileTaskPeriodSeconds = plugin.getConfig().getInt("mobileTaskPeriodSeconds", 20) * TICKS_PER_SECOND;
         
         loadAntennas(plugin);
 
@@ -912,8 +912,8 @@ public class RadioBeacon extends JavaPlugin {
 
         // Compass notification task
         int taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, 
-            Configurator.compassTaskStartDelaySeconds,
-            Configurator.compassTaskPeriodSeconds);
+            Configurator.mobileTaskStartDelaySeconds,
+            Configurator.mobileTaskPeriodSeconds);
 
         if (taskId == -1) {
             log.severe("Failed to schedule radio signal reception task");
