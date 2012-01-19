@@ -770,6 +770,7 @@ class Configurator {
 }
 
 class RadioWeatherListener extends WeatherListener {
+    Logger log = Logger.getLogger("Minecraft");
     Plugin plugin;
 
     public RadioWeatherListener(Plugin pl) {
@@ -780,9 +781,14 @@ class RadioWeatherListener extends WeatherListener {
         World world = event.getWorld();
         Location strikeLocation = event.getLightning().getLocation();
 
+        if (Antenna.getAntennaByBase(strikeLocation) != null) {
+            log.info("not striking, base");
+            return;
+        }
+
         Iterator it = Antenna.basesAt.entrySet().iterator();
 
-        // TODO: can we get deterministic iteration order? for target index
+        // Find nearby antennas
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             Antenna ant = (Antenna)pair.getValue();
@@ -793,6 +799,7 @@ class RadioWeatherListener extends WeatherListener {
             // Within strike range?
             // TODO: varying strike radius
             if (ant.withinRange(strikeLocation, Configurator.fixedLightningAttractRadius)) {
+                log.info("striking antenna "+ant);
                 world.strikeLightning(ant.baseAt.getLocation());
 
                 // TODO: explosion
