@@ -16,6 +16,7 @@ import org.bukkit.plugin.*;
 import org.bukkit.event.*;
 import org.bukkit.event.block.*;
 import org.bukkit.event.player.*;
+import org.bukkit.event.weather.*;
 import org.bukkit.Material.*;
 import org.bukkit.block.*;
 import org.bukkit.entity.*;
@@ -540,6 +541,13 @@ class PlayerInteractListener extends PlayerListener {
             }
             int receptionRadius = Antenna.getCompassRadius(item);
             player.sendMessage("Tuned radio" + (receptionRadius == 0 ? "" : " (range " + receptionRadius + " m)"));
+
+        // TODO: remove
+        // For testing purposes, strike lightning
+        } else if (item != null && item.getType() == Material.DIAMOND_SWORD && block != null && event.getAction() == Action.LEFT_CLICK_BLOCK) {
+            World world = block.getWorld();
+
+            world.strikeLightning(block.getLocation());
         }
     }
 
@@ -584,6 +592,7 @@ class Configurator {
     // Configuration options
     static int fixedInitialRadius;
     static int fixedRadiusIncreasePerBlock;
+    static int fixedLightningAttractRadius;
     static double fixedRadiusStormFactor;
     static double fixedRadiusThunderFactor;
     static int fixedMaxHeight;
@@ -591,6 +600,7 @@ class Configurator {
     static Material fixedBaseMaterial;
     static Material fixedAntennaMaterial;
     static boolean fixedRadiateFromTip;
+
     static int compassInitialRadius;
     static int compassIncreaseRadius;
     static int compassTaskStartDelaySeconds;
@@ -606,6 +616,9 @@ class Configurator {
 
         fixedInitialRadius = plugin.getConfig().getInt("fixedInitialRadius", 100);
         fixedRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedRadiusIncreasePerBlock", 100);
+        
+        fixedLightningAttractRadius = plugin.getConfig().getInt("fixedLightningAttractRadius", 10);
+
         fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);
         fixedRadiusThunderFactor = plugin.getConfig().getDouble("fixedRadiusThunderFactor", 1.1);
 
@@ -756,10 +769,46 @@ class Configurator {
     }
 }
 
+class RadioWeatherListener extends WeatherListener {
+    Plugin plugin;
+
+    public RadioWeatherListener(Plugin pl) {
+        plugin = pl;
+    }
+
+    public void onLightningStrike(LightningStrikeEvent event) { 
+        World world = event.getWorld();
+        Location strikeLocation = event.getLightning().getLocation();
+
+        Iterator it = Antenna.basesAt.entrySet().iterator();
+
+        // TODO: can we get deterministic iteration order? for target index
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            Antenna ant = (Antenna)pair.getValue();
+
+            // Compare 2D
+            strikeLocation.setY(strikeLocation.getY());
+
+            // Within strike range?
+            // TODO: varying strike radius
+            if (ant.withinRange(strikeLocation, Configurator.fixedLightningAttractRadius)) {
+                world.strikeLightning(ant.baseAt.getLocation());
+
+                // TODO: explosion
+                // TODO: nearby players?
+            }
+        }
+ 
+    }
+}
+
+
 public class RadioBeacon extends JavaPlugin {
     Logger log = Logger.getLogger("Minecraft");
     BlockListener blockListener;
     PlayerListener playerListener;
+    RadioWeatherListener weatherListener;
     ReceptionTask receptionTask;
 
     public void onEnable() {
@@ -772,6 +821,7 @@ public class RadioBeacon extends JavaPlugin {
 
         blockListener = new BlockPlaceListener(this);
         playerListener = new PlayerInteractListener(this);
+        weatherListener = new RadioWeatherListener(this);
         receptionTask = new ReceptionTask(this);
 
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_PLACE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
@@ -781,6 +831,8 @@ public class RadioBeacon extends JavaPlugin {
         
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_ITEM_HELD, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
+
+        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.LIGHTNING_STRIKE, weatherListener, org.bukkit.event.Event.Priority.Lowest, this);
 
         // Compass notification task
         int taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, 
