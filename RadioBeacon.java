@@ -188,6 +188,7 @@ class Antenna {
     public static void destroy(Antenna ant) {
         destroyTip(ant);
         destroyBase(ant);
+        log.info("Destroyed antenna " + ant);
     }
 
     public static void destroyTip(Antenna ant) {
@@ -569,8 +570,9 @@ class PlayerInteractListener extends PlayerListener {
             player.sendMessage("Tuned radio" + (receptionRadius == 0 ? "" : " (range " + receptionRadius + " m)"));
 
         }
-        // For testing purposes, strike lightning
         /*
+        // For testing purposes, strike lightning
+        // TODO: remove
         else if (item != null && item.getType() == Material.DIAMOND_SWORD && block != null && event.getAction() == Action.LEFT_CLICK_BLOCK) {
             World world = block.getWorld();
 
@@ -823,17 +825,28 @@ class RadioWeatherListener extends WeatherListener {
 
         Antenna directAnt = Antenna.getAntennaByBase(strikeLocation);
         if (directAnt != null) {
+
             // Direct hit!
             log.info("directly hit "+directAnt);
 
             float power = directAnt.getBlastPower();
-            log.info("blast power="+power);
+            Location baseLoc = directAnt.getBaseLocation();
+
             if (power > 0) {
-                world.createExplosion(directAnt.getBaseLocation(), power, Configurator.fixedBlastSetFire);
+                world.createExplosion(baseLoc, power, Configurator.fixedBlastSetFire);
             }
 
-            // TODO: destroy antenna!  if base block destroyed
-            // or in explosion event?
+            // Ensure antenna is destroyed
+            Block baseBlock = world.getBlockAt(baseLoc);
+            if (baseBlock.getType() == Configurator.fixedBaseMaterial) {
+                baseBlock.setType(Material.AIR);
+
+                // TODO: log destroyed by lightning
+                Antenna.destroy(directAnt);
+            }
+            // TODO: move destruction check to explosion event? There's ENTITY_EXPODE,
+            // but is it fired for any createExplosion? Should make explosions destroy
+            // antennas, regardless. If possible.
 
             return;
         }
