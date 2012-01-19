@@ -261,11 +261,18 @@ class Antenna {
         return radius;
     }
 
+    // 2D radius within lightning strike will strike base
     public int getLightningAttractRadius() {
         int unclampedHeight = tipAt.y - baseAt.y;       // not limited, unlike getHeight()
-
-
+        
         return Configurator.fixedLightningAttractRadiusInitial + unclampedHeight * Configurator.fixedLightningAttractRadiusIncreasePerBlock;
+    }
+
+    // Explosive power on direct lightning strike
+    public float getBlastPower() {
+        int unclampedHeight = tipAt.y - baseAt.y;       // not limited, unlike getHeight()
+
+        return Configurator.fixedBlastPowerInitial + unclampedHeight * Configurator.fixedBlastPowerIncreasePerBlock;
     }
 
     public boolean withinRange(Location receptionLoc, int receptionRadius) {
@@ -601,6 +608,9 @@ class Configurator {
     static int fixedRadiusIncreasePerBlock;
     static int fixedLightningAttractRadiusInitial;
     static int fixedLightningAttractRadiusIncreasePerBlock;
+    static boolean fixedBlastSetFire;
+    static float fixedBlastPowerInitial;
+    static float fixedBlastPowerIncreasePerBlock;
     static double fixedRadiusStormFactor;
     static double fixedRadiusThunderFactor;
     static int fixedMaxHeight;
@@ -627,6 +637,11 @@ class Configurator {
         
         fixedLightningAttractRadiusInitial = plugin.getConfig().getInt("fixedLightningAttractRadiusInitial", 10);
         fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedLightningAttractRadiusIncreasePerBlock", 10);
+
+        fixedBlastSetFire = plugin.getConfig().getBoolean("fixedBlastSetFire", true);
+        fixedBlastPowerInitial = (float)plugin.getConfig().getDouble("fixedBlastPowerInitial", 1);
+        fixedBlastPowerIncreasePerBlock = (float)plugin.getConfig().getDouble("fixedBlastPowerIncreasePerBlock", 0);
+
 
         fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);
         fixedRadiusThunderFactor = plugin.getConfig().getDouble("fixedRadiusThunderFactor", 1.1);
@@ -790,8 +805,22 @@ class RadioWeatherListener extends WeatherListener {
         World world = event.getWorld();
         Location strikeLocation = event.getLightning().getLocation();
 
-        if (Antenna.getAntennaByBase(strikeLocation) != null) {
-            log.info("not striking, base");
+        Antenna directAnt = Antenna.getAntennaByBase(strikeLocation);
+        if (directAnt != null) {
+            // Direct hit!
+            log.info("directly hit "+directAnt);
+
+            float power = directAnt.getBlastPower();
+            log.info("blast power="+power);
+            if (power > 0) {
+                world.createExplosion(directAnt.getBaseLocation(), power, Configurator.fixedBlastSetFire);
+            }
+
+            // TODO: electrify nearby players?
+
+            // TODO: destroy antenna! 
+            // or in explosion event?
+
             return;
         }
 
@@ -810,8 +839,6 @@ class RadioWeatherListener extends WeatherListener {
                 log.info("striking antenna "+ant);
                 world.strikeLightning(ant.baseAt.getLocation());
 
-                // TODO: explosion
-                // TODO: nearby players?
             }
         }
  
