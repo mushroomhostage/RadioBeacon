@@ -120,10 +120,10 @@ class AntennaXZ implements Comparable {
     }
 
     public int compareTo(Object obj) {
-        if (!(obj instanceof AntennaLocation)) {
+        if (!(obj instanceof AntennaXZ)) {
             return -1;
         }
-        AntennaLocation rhs = (AntennaLocation)obj;
+        AntennaXZ rhs = (AntennaXZ)obj;
 
         // TODO: also compare world
         if (x - rhs.x != 0) {
@@ -151,21 +151,38 @@ class Antenna {
 
     // TODO: change location to store x,z for lookup, and tip/base (y) separately. 
     // (Then can detect destroying middle of antenna)
+    // TODO: remove
+    /*
     static ConcurrentHashMap<AntennaLocation, Antenna> tipsAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
     static ConcurrentHashMap<AntennaLocation, Antenna> basesAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
-
     AntennaLocation tipAt;      // broadcast tip
     AntennaLocation baseAt;     // control station
+    */
     int height;
+
+
+    static ConcurrentHashMap<AntennaXZ, Antenna> xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();
+    AntennaXZ xz;
+    int baseY, tipY;
+
     String message;
 
     // Normal antenna creation method
     public Antenna(Location loc) {
+        // TODO: remove
+        /*
         baseAt = new AntennaLocation(loc);
         tipAt = new AntennaLocation(loc);
-
         basesAt.put(baseAt, this);
         tipsAt.put(tipAt, this);
+        */
+
+        xz = new AntennaXZ(loc);
+        baseY = (int)loc.getY();
+        tipY = baseY;
+
+        xz2Ant.put(xz, this);
+
         height = 0;
         log.info("New antenna " + this);
     }
@@ -178,11 +195,16 @@ class Antenna {
             throw new RuntimeException("Antenna loading failed, no world: " + d.get("world"));
         }
 
+        /*
         baseAt = new AntennaLocation(world, d.get("baseX"), d.get("baseY"), d.get("baseZ"));
         tipAt = new AntennaLocation(world, d.get("tipX"), d.get("tipY"), d.get("tipZ"));
-
         basesAt.put(baseAt, this);
         tipsAt.put(tipAt, this);
+        */
+
+        AntennaXZ xz = new AntennaXZ(world, (Integer)d.get("X"), (Integer)d.get("Z"));
+        baseY = (Integer)d.get("baseY");
+        tipY = (Integer)d.get("tipY");
 
         setMessage((String)d.get("message"));
 
@@ -197,8 +219,10 @@ class Antenna {
 
         // For simplicity, dump as a flat data structure
 
-        d.put("world", baseAt.world.getUID().toString());
+        //d.put("world", baseAt.world.getUID().toString());
+        d.put("world", xz.world.getUID().toString());
 
+        /*
         d.put("baseX", baseAt.x); 
         d.put("baseY", baseAt.y); 
         d.put("baseZ", baseAt.z);
@@ -206,6 +230,12 @@ class Antenna {
         d.put("tipX", tipAt.x); 
         d.put("tipY", tipAt.y); 
         d.put("tipZ", tipAt.z); 
+        */
+
+        d.put("X", xz.x);
+        d.put("Z", xz.z);
+        d.put("baseY", baseY);
+        d.put("tipY", tipY);
 
         d.put("message", message);
         // TODO: other user data?
@@ -214,16 +244,29 @@ class Antenna {
     }
 
     public String toString() {
-        return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", tip="+tipAt+", base="+baseAt+", m="+message+">";
+        //return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", tip="+tipAt+", base="+baseAt+", m="+message+">";
+        return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", xz="+xz+", baseY="+baseY+", tipY="+tipY+" m="+message+">";
     }
 
+    public static Antenna getAntenna(Location loc) {
+        return getAntenna(new AntennaXZ(loc));
+    }
+    public static Antenna getAntenna(AntennaXZ loc) {
+        Antenna a = xz2Ant.get(loc);
+        log.info("getAntenna("+loc+") on "+xz2Ant+" = "+a);
+        return a;
+    }
+
+    // TODO: replace by getAntenna()
     public static Antenna getAntennaByTip(Location loc) {
-        return tipsAt.get(new AntennaLocation(loc));
+        //return tipsAt.get(new AntennaLocation(loc));
+        return getAntenna(loc);
     }
-    
     public static Antenna getAntennaByBase(Location loc) {
-        return basesAt.get(new AntennaLocation(loc));
+        //return basesAt.get(new AntennaLocation(loc));
+        return getAntenna(loc);
     }
+
 
     // Get an antenna by base directly adjacent to given location
     public static Antenna getAntennaByBaseAdjacent(Location loc) {
@@ -239,11 +282,17 @@ class Antenna {
     }
 
     public static void destroy(Antenna ant) {
-        destroyTip(ant);
-        destroyBase(ant);
+        //destroyTip(ant);
+        //destroyBase(ant);
+
+        if (xz2Ant.remove(ant.xz) == null) {
+            throw new RuntimeException("No antenna at "+ant.xz+" to destroy!");
+        }
+
         log.info("Destroyed antenna " + ant);
     }
 
+    /*
     public static void destroyTip(Antenna ant) {
         if (tipsAt.remove(ant.tipAt) == null) {
             throw new RuntimeException("No antenna tip found to destroy at " + ant.tipAt);
@@ -254,7 +303,7 @@ class Antenna {
         if (basesAt.remove(ant.baseAt) == null) {
             throw new RuntimeException("No antenna base found to destroy at " + ant.baseAt);
         }
-    }
+    }*/
 
     // Set or get textual message being broadcasted (may be null for none)
     public void setMessage(String m) {
@@ -267,6 +316,7 @@ class Antenna {
 
     // Extend or shrink size of the antenna, updating the new center location
     public void setTipLocation(Location newLoc) {
+        /*
         log.info("Move tip from "+tipAt+" to + " + newLoc);
         destroyTip(this);
 
@@ -275,10 +325,19 @@ class Antenna {
         calculateHeight();
 
         tipsAt.put(tipAt, this);
+        */
+        setTipY(newLoc.getBlockY());
+    }
+    public void setTipY(int newTipY) {
+        log.info("Move tip from "+tipY+" to + " +newTipY);
+        tipY = newTipY;
+
+        calculateHeight();  // TODO: rethink
     }
 
     private void calculateHeight() {
-        height = tipAt.y - baseAt.y;
+        //height = tipAt.y - baseAt.y;
+        height = tipY - baseY;
         if (Configurator.fixedMaxHeight != 0 && height > Configurator.fixedMaxHeight) {
             // Above max will not extend range
             height = Configurator.fixedMaxHeight;
@@ -286,7 +345,8 @@ class Antenna {
     }
 
     public Location getTipLocation() {
-        return tipAt.getLocation();
+        //return tipAt.getLocation();
+        return xz.getLocation(tipY);
     }
 
     public Location getSourceLocation() {
@@ -294,7 +354,8 @@ class Antenna {
     }
     
     public Location getBaseLocation() {
-        return baseAt.getLocation();
+        //return baseAt.getLocation();
+        return xz.getLocation(baseY);
     }
 
     public int getHeight() {
@@ -305,10 +366,11 @@ class Antenna {
         // TODO: exponential not multiplicative?
         int radius = Configurator.fixedInitialRadius + getHeight() * Configurator.fixedRadiusIncreasePerBlock;
 
-        if (tipAt.world.hasStorm()) {
+        //if (tipAt.world.hasStorm()) {
+        if (xz.world.hasStorm()) {
             radius = (int)((double)radius * Configurator.fixedRadiusStormFactor);
         }
-        if (tipAt.world.isThundering()) {
+        if (xz.world.isThundering()) {
             radius = (int)((double)radius * Configurator.fixedRadiusThunderFactor);
         }
 
@@ -317,14 +379,15 @@ class Antenna {
 
     // 2D radius within lightning strike will strike base
     public int getLightningAttractRadius() {
-        int unclampedHeight = tipAt.y - baseAt.y;       // not limited, unlike getHeight()
+        //int unclampedHeight = tipAt.y - baseAt.y;       // not limited, unlike getHeight()
+        int unclampedHeight = tipY - baseY;
         
         return Configurator.fixedLightningAttractRadiusInitial + unclampedHeight * Configurator.fixedLightningAttractRadiusIncreasePerBlock;
     }
 
     // Explosive power on direct lightning strike
     public float getBlastPower() {
-        int unclampedHeight = tipAt.y - baseAt.y;       // not limited, unlike getHeight()
+        int unclampedHeight = tipY - baseY;
         float power = Configurator.fixedBlastPowerInitial + unclampedHeight * Configurator.fixedBlastPowerIncreasePerBlock;
 
         return Math.min(power, Configurator.fixedBlastPowerMax);
@@ -390,7 +453,7 @@ class Antenna {
 
     // Receive signals from standing at any location
     static public void receiveSignals(Player player, Location receptionLoc, int receptionRadius, boolean signalLock) {
-        Iterator it = Antenna.tipsAt.entrySet().iterator();
+        Iterator it = Antenna.xz2Ant.entrySet().iterator();
         int count = 0;
         List<Antenna> nearbyAnts = new ArrayList<Antenna>();
 
@@ -839,7 +902,8 @@ class Configurator {
         ArrayList<HashMap<String,Object>> all = new ArrayList<HashMap<String,Object>>();
         YamlConfiguration antennaConfig = getAntennaConfig(plugin);
 
-        Iterator it = Antenna.tipsAt.entrySet().iterator();
+        //Iterator it = Antenna.tipsAt.entrySet().iterator();
+        Iterator it = Antenna.xz2Ant.entrySet().iterator();
         int count = 0;
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
@@ -904,7 +968,8 @@ class RadioWeatherListener extends WeatherListener {
             return;
         }
 
-        Iterator it = Antenna.basesAt.entrySet().iterator();
+        //Iterator it = Antenna.basesAt.entrySet().iterator();
+        Iterator it = Antenna.xz2Ant.entrySet().iterator();
 
         // Find nearby antennas
         while (it.hasNext()) {
@@ -914,7 +979,8 @@ class RadioWeatherListener extends WeatherListener {
             // Within strike range?
             if (ant.within2DRadius(strikeLocation, ant.getLightningAttractRadius())) {
                 log.info("striking antenna "+ant+", within range "+ant.getLightningAttractRadius()+" of "+strikeLocation);
-                world.strikeLightning(ant.baseAt.getLocation());
+                //world.strikeLightning(ant.baseAt.getLocation());
+                world.strikeLightning(ant.getBaseLocation());
             }
         }
  
@@ -1001,13 +1067,14 @@ public class RadioBeacon extends JavaPlugin {
 
     // Show either all antennas information, if have permission, or count only if not
     private void listAntennas(CommandSender sender) {
-        Iterator it = Antenna.tipsAt.entrySet().iterator();
+        //Iterator it = Antenna.tipsAt.entrySet().iterator();
+        Iterator it = Antenna.xz2Ant.entrySet().iterator();
         int count = 0;
         boolean reveal = !(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.reveal");
 
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
-            AntennaLocation at = (AntennaLocation)pair.getKey();
+            AntennaXZ xz = (AntennaXZ)pair.getKey();
             Antenna ant = (Antenna)pair.getValue();
 
             if (reveal) {
