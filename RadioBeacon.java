@@ -454,6 +454,20 @@ class BlockPlaceListener extends BlockListener {
 
             if (ant != null) {
                 // Verify whole length of antenna is intact
+                // TODO
+                /*
+                for (int y = ant.baseY + 1; y <= ant.tipY; y += 1) {
+                    Location locPart = ant.xz.getLocation(y);
+                    Block blockPart = world.getBlockAt(locPart);
+                    
+                    if (block.getType() != Configurator.fixedAntennaMaterial) {
+                        // TODO: use longest length intact
+                        destroy = true;
+                        break;
+                    }
+                }*/
+
+                // Verify whole length of antenna is intact
                 int i = ant.getHeight();
                 boolean destroy = false;
                 while(i > 0) {
