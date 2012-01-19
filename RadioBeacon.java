@@ -62,7 +62,10 @@ class AntennaXZ implements Comparable {
         }
         AntennaXZ rhs = (AntennaXZ)obj;
 
-        // TODO: also compare world
+        if (!world.equals(rhs.world)) {
+            return world.getUID().compareTo(rhs.world.getUID());    // TODO: faster to compare?
+        }
+
         if (x - rhs.x != 0) {
             return x - rhs.x;
         } else if (z - rhs.z != 0) {
