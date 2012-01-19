@@ -31,70 +31,7 @@ class Log {
 }
 
 
-// Integral location (unlike Bukkit Location)
-class AntennaLocation implements Comparable {
-    World world;
-    int x, y, z;
-
-    public AntennaLocation(World w, int x0, int y0, int z0) {
-        world = w;
-        x = x0;
-        y = y0;
-        z = z0;
-    }
-
-    public AntennaLocation(World w, Object x0, Object y0, Object z0) {
-        world = w;
-        // sorry
-        x = ((Integer)x0).intValue();
-        y = ((Integer)y0).intValue();
-        z = ((Integer)z0).intValue();
-    }
-
-    public AntennaLocation(Location loc) {
-        world = loc.getWorld();
-        x = loc.getBlockX();
-        y = loc.getBlockY();
-        z = loc.getBlockZ();
-    }
-
-    public Location getLocation() {
-        return new Location(world, x + 0.5, y + 0.5, z + 0.5);
-    }
-
-    public String toString() {
-        return x + "," + y + "," + z;
-    }
-
-    public int compareTo(Object obj) {
-        if (!(obj instanceof AntennaLocation)) {
-            return -1;
-        }
-        AntennaLocation rhs = (AntennaLocation)obj;
-
-        // TODO: also compare world
-        if (x - rhs.x != 0) {
-            return x - rhs.x;
-        } else if (y - rhs.y != 0) {
-            return y - rhs.y;
-        } else if (z - rhs.z != 0) {
-            return z - rhs.z;
-        }
-
-        return 0;
-    }
-
-    public boolean equals(Object obj) {
-        return compareTo(obj) == 0;      // why do I have to do this myself?
-    }
-
-    public int hashCode() {
-        // lame hashing TODO: improve?
-        return x * y * z;   
-    }
-}
-
-// Flat location TODO refactor
+// 2D integral location (unlike Bukkit's location)
 class AntennaXZ implements Comparable {
     World world;
     int x, z;
@@ -149,34 +86,18 @@ class AntennaXZ implements Comparable {
 class Antenna {
     static Logger log = Logger.getLogger("Minecraft");
 
-    // TODO: change location to store x,z for lookup, and tip/base (y) separately. 
-    // (Then can detect destroying middle of antenna)
-    // TODO: remove
-    /*
-    static ConcurrentHashMap<AntennaLocation, Antenna> tipsAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
-    static ConcurrentHashMap<AntennaLocation, Antenna> basesAt = new ConcurrentHashMap<AntennaLocation, Antenna>();
-    AntennaLocation tipAt;      // broadcast tip
-    AntennaLocation baseAt;     // control station
-    */
-    int height;
-
 
     static ConcurrentHashMap<AntennaXZ, Antenna> xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();
+
     AntennaXZ xz;
     int baseY, tipY;
+
+    int height;
 
     String message;
 
     // Normal antenna creation method
     public Antenna(Location loc) {
-        // TODO: remove
-        /*
-        baseAt = new AntennaLocation(loc);
-        tipAt = new AntennaLocation(loc);
-        basesAt.put(baseAt, this);
-        tipsAt.put(tipAt, this);
-        */
-
         xz = new AntennaXZ(loc);
         baseY = (int)loc.getY();
         tipY = baseY;
@@ -195,13 +116,6 @@ class Antenna {
             throw new RuntimeException("Antenna loading failed, no world: " + d.get("world"));
         }
 
-        /*
-        baseAt = new AntennaLocation(world, d.get("baseX"), d.get("baseY"), d.get("baseZ"));
-        tipAt = new AntennaLocation(world, d.get("tipX"), d.get("tipY"), d.get("tipZ"));
-        basesAt.put(baseAt, this);
-        tipsAt.put(tipAt, this);
-        */
-
         AntennaXZ xz = new AntennaXZ(world, (Integer)d.get("X"), (Integer)d.get("Z"));
         baseY = (Integer)d.get("baseY");
         tipY = (Integer)d.get("tipY");
@@ -219,18 +133,7 @@ class Antenna {
 
         // For simplicity, dump as a flat data structure
 
-        //d.put("world", baseAt.world.getUID().toString());
         d.put("world", xz.world.getUID().toString());
-
-        /*
-        d.put("baseX", baseAt.x); 
-        d.put("baseY", baseAt.y); 
-        d.put("baseZ", baseAt.z);
-
-        d.put("tipX", tipAt.x); 
-        d.put("tipY", tipAt.y); 
-        d.put("tipZ", tipAt.z); 
-        */
 
         d.put("X", xz.x);
         d.put("Z", xz.z);
@@ -244,7 +147,6 @@ class Antenna {
     }
 
     public String toString() {
-        //return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", tip="+tipAt+", base="+baseAt+", m="+message+">";
         return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", xz="+xz+", baseY="+baseY+", tipY="+tipY+" m="+message+">";
     }
 
@@ -257,22 +159,11 @@ class Antenna {
         return a;
     }
 
-    // TODO: replace by getAntenna()
-    public static Antenna getAntennaByTip(Location loc) {
-        //return tipsAt.get(new AntennaLocation(loc));
-        return getAntenna(loc);
-    }
-    public static Antenna getAntennaByBase(Location loc) {
-        //return basesAt.get(new AntennaLocation(loc));
-        return getAntenna(loc);
-    }
-
-
     // Get an antenna by base directly adjacent to given location
-    public static Antenna getAntennaByBaseAdjacent(Location loc) {
+    public static Antenna getAntennaByAdjacent(Location loc) {
         for (int x = -1; x <= 1; x += 1) {
             for (int z = -1; z <= 1; z += 1) {
-                Antenna ant = getAntennaByBase(loc.clone().add(x+0.5, 0, z+0.5));
+                Antenna ant = getAntenna(loc.clone().add(x+0.5, 0, z+0.5));
                 if (ant != null) {
                     return ant;
                 }
@@ -537,7 +428,7 @@ class BlockPlaceListener extends BlockListener {
         } else if (block.getType() == Configurator.fixedAntennaMaterial) {
             Block against = event.getBlockAgainst();
 
-            Antenna existingAnt = Antenna.getAntennaByTip(against.getLocation());
+            Antenna existingAnt = Antenna.getAntenna(against.getLocation());
             if (existingAnt != null) {
                 existingAnt.setTipLocation(block.getLocation());
                 player.sendMessage("Extended antenna range to " + existingAnt.getBroadcastRadius() + " m");
@@ -551,14 +442,14 @@ class BlockPlaceListener extends BlockListener {
         World world = block.getWorld();
 
         if (block.getType() == Configurator.fixedBaseMaterial) {
-            Antenna ant = Antenna.getAntennaByBase(block.getLocation());
+            Antenna ant = Antenna.getAntenna(block.getLocation());
             
             if (ant != null) {
                 ant.destroy(ant);
                 event.getPlayer().sendMessage("Destroyed antenna");
             }
         } else if (block.getType() == Configurator.fixedAntennaMaterial) {
-            Antenna ant = Antenna.getAntennaByTip(block.getLocation());
+            Antenna ant = Antenna.getAntenna(block.getLocation());
 
             if (ant != null) {
                 // Verify whole length of antenna is intact
@@ -587,7 +478,7 @@ class BlockPlaceListener extends BlockListener {
             }
             // TODO: also check when destroyed by explosions or other means!
         } else if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
-            Antenna ant = Antenna.getAntennaByBaseAdjacent(block.getLocation());
+            Antenna ant = Antenna.getAntennaByAdjacent(block.getLocation());
             if (ant != null) {
                 event.getPlayer().sendMessage("Cleared antenna message");
                 ant.message = null;
@@ -600,7 +491,7 @@ class BlockPlaceListener extends BlockListener {
         Block block = event.getBlock();
         String[] text = event.getLines();
 
-        Antenna ant = Antenna.getAntennaByBaseAdjacent(block.getLocation());
+        Antenna ant = Antenna.getAntennaByAdjacent(block.getLocation());
         if (ant != null) {
             ant.message = joinString(text);
             event.getPlayer().sendMessage("Set transmission message: " + ant.message);
@@ -653,7 +544,7 @@ class PlayerInteractListener extends PlayerListener {
         Player player = event.getPlayer();
 
         if (block != null && block.getType() == Configurator.fixedBaseMaterial) {
-            Antenna ant = Antenna.getAntennaByBase(block.getLocation());
+            Antenna ant = Antenna.getAntenna(block.getLocation());
             if (ant == null) {
                 return;
             }
@@ -940,7 +831,7 @@ class RadioWeatherListener extends WeatherListener {
         World world = event.getWorld();
         Location strikeLocation = event.getLightning().getLocation();
 
-        Antenna directAnt = Antenna.getAntennaByBase(strikeLocation);
+        Antenna directAnt = Antenna.getAntenna(strikeLocation);
         if (directAnt != null) {
 
             // Direct hit!
