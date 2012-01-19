@@ -282,8 +282,14 @@ class Antenna {
         return getSourceLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
     }
 
-    public boolean withinRadius(Location otherLoc, int radius) {
-        return getSourceLocation().distance(otherLoc) < radius;
+    // Return whether location is within a two-dimensional radius of antenna
+    public boolean within2DRadius(Location otherLoc, int radius) {
+        Location otherLoc2d = otherLoc.clone();
+        Location baseLoc = getBaseLocation();
+
+        otherLoc2d.setY(baseLoc.getY());
+
+        return baseLoc.distance(otherLoc2d) < radius;
     }
 
     private static int square(int x) {
@@ -648,7 +654,7 @@ class Configurator {
         fixedBlastSetFire = plugin.getConfig().getBoolean("fixedBlastSetFire", true);
         fixedBlastPowerInitial = (float)plugin.getConfig().getDouble("fixedBlastPowerInitial", 2);
         fixedBlastPowerIncreasePerBlock = (float)plugin.getConfig().getDouble("fixedBlastPowerIncreasePerBlock", 1);
-        fixedBlastPowerMax = (float)plugin.getConfig().getDouble("fixedBlastPowerMax", 4);
+        fixedBlastPowerMax = (float)plugin.getConfig().getDouble("fixedBlastPowerMax", 6);
 
 
         fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);
@@ -824,8 +830,6 @@ class RadioWeatherListener extends WeatherListener {
                 world.createExplosion(directAnt.getBaseLocation(), power, Configurator.fixedBlastSetFire);
             }
 
-            // TODO: electrify nearby players?
-
             // TODO: destroy antenna!  if base block destroyed
             // or in explosion event?
 
@@ -839,14 +843,10 @@ class RadioWeatherListener extends WeatherListener {
             Map.Entry pair = (Map.Entry)it.next();
             Antenna ant = (Antenna)pair.getValue();
 
-            // Compare two-dimensionally
-            strikeLocation.setY(ant.getBaseLocation().getY());
-
             // Within strike range?
-            if (ant.withinRadius(strikeLocation, ant.getLightningAttractRadius())) {
+            if (ant.within2DRadius(strikeLocation, ant.getLightningAttractRadius())) {
                 log.info("striking antenna "+ant+", within range "+ant.getLightningAttractRadius()+" of "+strikeLocation);
                 world.strikeLightning(ant.baseAt.getLocation());
-
             }
         }
  
