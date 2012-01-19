@@ -275,9 +275,14 @@ class Antenna {
         return Configurator.fixedBlastPowerInitial + unclampedHeight * Configurator.fixedBlastPowerIncreasePerBlock;
     }
 
-    public boolean withinRange(Location receptionLoc, int receptionRadius) {
+    public boolean withinReceiveRange(Location receptionLoc, int receptionRadius) {
         // Sphere intersection of broadcast range from source
+        // TODO: asymmetric send/receive radii?
         return getSourceLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
+    }
+
+    public boolean withinRadius(Location otherLoc, int radius) {
+        return getSourceLocation().distance(otherLoc) < radius;
     }
 
     private static int square(int x) {
@@ -333,7 +338,7 @@ class Antenna {
             Map.Entry pair = (Map.Entry)it.next();
             Antenna otherAnt = (Antenna)pair.getValue();
 
-            if (otherAnt.withinRange(receptionLoc, receptionRadius)) {
+            if (otherAnt.withinReceiveRange(receptionLoc, receptionRadius)) {
                 //log.info("Received transmission from " + otherAnt);
 
                 nearbyAnts.add(otherAnt);
@@ -831,12 +836,12 @@ class RadioWeatherListener extends WeatherListener {
             Map.Entry pair = (Map.Entry)it.next();
             Antenna ant = (Antenna)pair.getValue();
 
-            // Compare 2D
-            strikeLocation.setY(strikeLocation.getY());
+            // Compare two-dimensionally
+            strikeLocation.setY(ant.getBaseLocation().getY());
 
             // Within strike range?
-            if (ant.withinRange(strikeLocation, ant.getLightningAttractRadius())) {
-                log.info("striking antenna "+ant);
+            if (ant.withinRadius(strikeLocation, ant.getLightningAttractRadius())) {
+                log.info("striking antenna "+ant+", within range "+ant.getLightningAttractRadius()+" of "+strikeLocation);
                 world.strikeLightning(ant.baseAt.getLocation());
 
             }
