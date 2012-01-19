@@ -116,7 +116,7 @@ class Antenna {
             throw new RuntimeException("Antenna loading failed, no world: " + d.get("world"));
         }
 
-        AntennaXZ xz = new AntennaXZ(world, (Integer)d.get("X"), (Integer)d.get("Z"));
+        xz = new AntennaXZ(world, (Integer)d.get("X"), (Integer)d.get("Z"));
         baseY = (Integer)d.get("baseY");
         tipY = (Integer)d.get("tipY");
 
@@ -257,7 +257,7 @@ class Antenna {
         // TODO: exponential not multiplicative?
         int radius = Configurator.fixedInitialRadius + getHeight() * Configurator.fixedRadiusIncreasePerBlock;
 
-        //if (tipAt.world.hasStorm()) {
+        log.info("getBroadcastRadius, xz="+xz);
         if (xz.world.hasStorm()) {
             radius = (int)((double)radius * Configurator.fixedRadiusStormFactor);
         }
