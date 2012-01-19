@@ -5,9 +5,11 @@ fixedInitialRadius: 50
 fixedRadiusIncreasePerBlock: 50
 fixedLightningAttractRadiusInitial: 10
 fixedLightningAttractRadiusIncreasePerBlock: 0
+# Explosive power when tower struck by lightning (ghast fireball=1, creeper=2, TNT=4)
+fixedBlastPowerInitial: 2       
+fixedBlastPowerIncreasePerBlock: 1
+fixedBlastPowerMax: 4
 fixedBlastSetFire: true
-fixedBlastPowerInitial: 4       # 4 = TNT
-fixedBlastPowerIncreasePerBlock: 0
 fixedRadiusStormFactor: 0.7     # attenuate/amplify when has storm
 fixedRadiusThunderFactor: 1.1   # attenuate/amplify when is thundering
 fixedMaxHeightMeters: 0         # clamp antenna height

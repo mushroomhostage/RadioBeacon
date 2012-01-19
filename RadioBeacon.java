@@ -271,8 +271,9 @@ class Antenna {
     // Explosive power on direct lightning strike
     public float getBlastPower() {
         int unclampedHeight = tipAt.y - baseAt.y;       // not limited, unlike getHeight()
+        float power = Configurator.fixedBlastPowerInitial + unclampedHeight * Configurator.fixedBlastPowerIncreasePerBlock;
 
-        return Configurator.fixedBlastPowerInitial + unclampedHeight * Configurator.fixedBlastPowerIncreasePerBlock;
+        return Math.min(power, Configurator.fixedBlastPowerMax);
     }
 
     public boolean withinReceiveRange(Location receptionLoc, int receptionRadius) {
@@ -295,7 +296,7 @@ class Antenna {
 
     // Receive antenna signals (to this antenna) and show to player
     public void receiveSignals(Player player) {
-        player.sendMessage("Antenna range: " + getBroadcastRadius() + " m, lightning attraction: " + getLightningAttractRadius() + " m");
+        player.sendMessage("Antenna range: " + getBroadcastRadius() + " m, lightning attraction: " + getLightningAttractRadius() + " m" + ", blast power: " + getBlastPower());
 
         receiveSignals(player, getSourceLocation(), getBroadcastRadius(), false);
     }
@@ -616,6 +617,7 @@ class Configurator {
     static boolean fixedBlastSetFire;
     static float fixedBlastPowerInitial;
     static float fixedBlastPowerIncreasePerBlock;
+    static float fixedBlastPowerMax;
     static double fixedRadiusStormFactor;
     static double fixedRadiusThunderFactor;
     static int fixedMaxHeight;
@@ -644,8 +646,9 @@ class Configurator {
         fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedLightningAttractRadiusIncreasePerBlock", 10);
 
         fixedBlastSetFire = plugin.getConfig().getBoolean("fixedBlastSetFire", true);
-        fixedBlastPowerInitial = (float)plugin.getConfig().getDouble("fixedBlastPowerInitial", 1);
-        fixedBlastPowerIncreasePerBlock = (float)plugin.getConfig().getDouble("fixedBlastPowerIncreasePerBlock", 0);
+        fixedBlastPowerInitial = (float)plugin.getConfig().getDouble("fixedBlastPowerInitial", 2);
+        fixedBlastPowerIncreasePerBlock = (float)plugin.getConfig().getDouble("fixedBlastPowerIncreasePerBlock", 1);
+        fixedBlastPowerMax = (float)plugin.getConfig().getDouble("fixedBlastPowerMax", 4);
 
 
         fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);
@@ -823,7 +826,7 @@ class RadioWeatherListener extends WeatherListener {
 
             // TODO: electrify nearby players?
 
-            // TODO: destroy antenna! 
+            // TODO: destroy antenna!  if base block destroyed
             // or in explosion event?
 
             return;
