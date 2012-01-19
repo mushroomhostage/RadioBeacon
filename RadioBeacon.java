@@ -119,7 +119,12 @@ class Antenna {
             throw new RuntimeException("Antenna loading failed, no world: " + d.get("world"));
         }
 
-        xz = new AntennaXZ(world, (Integer)d.get("X"), (Integer)d.get("Z"));
+        if (d.get("baseX") != null) {
+            // Legacy format, tipX and tipZ are redundant
+            xz = new AntennaXZ(world, (Integer)d.get("baseX"), (Integer)d.get("baseZ"));
+        } else {
+            xz = new AntennaXZ(world, (Integer)d.get("X"), (Integer)d.get("Z"));
+        }
         baseY = (Integer)d.get("baseY");
         tipY = (Integer)d.get("tipY");
 
