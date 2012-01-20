@@ -4,7 +4,8 @@ version: 0
 fixedInitialRadius: 50
 fixedRadiusIncreasePerBlock: 50
 fixedLightningAttractRadiusInitial: 10
-fixedLightningAttractRadiusIncreasePerBlock: 0
+fixedLightningAttractRadiusIncreasePerBlock: 1
+fixedLightningAttractRadiusMax: 15
 # Explosive power when tower struck by lightning (ghast fireball=1, creeper=2, TNT=4)
 fixedBlastPowerInitial: 2
 fixedBlastPowerIncreasePerBlock: 0.4

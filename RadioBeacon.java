@@ -281,8 +281,9 @@ class Antenna {
     public int getLightningAttractRadius() {
         //int unclampedHeight = tipAt.y - baseAt.y;       // not limited, unlike getHeight()
         int unclampedHeight = tipY - baseY;
-        
-        return Configurator.fixedLightningAttractRadiusInitial + unclampedHeight * Configurator.fixedLightningAttractRadiusIncreasePerBlock;
+        int attractRadius = Configurator.fixedLightningAttractRadiusInitial + unclampedHeight * Configurator.fixedLightningAttractRadiusIncreasePerBlock;
+
+        return Math.min(attractRadius, Configurator.fixedLightningAttractRadiusMax);
     }
 
     // Explosive power on direct lightning strike
@@ -610,6 +611,8 @@ class PlayerInteractListener extends PlayerListener {
         else if (item != null && item.getType() == Material.DIAMOND_SWORD && block != null && event.getAction() == Action.LEFT_CLICK_BLOCK) {
             World world = block.getWorld();
 
+            world.setStorm(true);
+
             world.strikeLightning(block.getLocation());
         }
         */
@@ -658,6 +661,7 @@ class Configurator {
     static int fixedRadiusIncreasePerBlock;
     static int fixedLightningAttractRadiusInitial;
     static int fixedLightningAttractRadiusIncreasePerBlock;
+    static int fixedLightningAttractRadiusMax;
     static boolean fixedBlastSetFire;
     static float fixedBlastPowerInitial;
     static float fixedBlastPowerIncreasePerBlock;
@@ -688,7 +692,8 @@ class Configurator {
         fixedRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedRadiusIncreasePerBlock", 100);
         
         fixedLightningAttractRadiusInitial = plugin.getConfig().getInt("fixedLightningAttractRadiusInitial", 10);
-        fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedLightningAttractRadiusIncreasePerBlock", 10);
+        fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedLightningAttractRadiusIncreasePerBlock", 1);
+        fixedLightningAttractRadiusMax = plugin.getConfig().getInt("fixedLightningAttractRadiusMax", 15);
 
         fixedBlastSetFire = plugin.getConfig().getBoolean("fixedBlastSetFire", true);
         fixedBlastPowerInitial = (float)plugin.getConfig().getDouble("fixedBlastPowerInitial", 2);
