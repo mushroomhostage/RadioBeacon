@@ -95,8 +95,6 @@ class Antenna {
     AntennaXZ xz;
     int baseY, tipY;
 
-    int height;
-
     String message;
 
     // Normal antenna creation method
@@ -107,7 +105,6 @@ class Antenna {
 
         xz2Ant.put(xz, this);
 
-        height = 0;
         log.info("New antenna " + this);
     }
 
@@ -129,8 +126,6 @@ class Antenna {
         tipY = (Integer)d.get("tipY");
 
         setMessage((String)d.get("message"));
-
-        calculateHeight();
 
         xz2Ant.put(xz, this);
 
@@ -165,7 +160,6 @@ class Antenna {
     }
     public static Antenna getAntenna(AntennaXZ loc) {
         Antenna a = xz2Ant.get(loc);
-        log.info("getAntenna("+loc+") on "+xz2Ant+" = "+a);
         return a;
     }
 
@@ -217,36 +211,14 @@ class Antenna {
 
     // Extend or shrink size of the antenna, updating the new center location
     public void setTipLocation(Location newLoc) {
-        /*
-        log.info("Move tip from "+tipAt+" to + " + newLoc);
-        destroyTip(this);
-
-        tipAt = new AntennaLocation(newLoc);
-
-        calculateHeight();
-
-        tipsAt.put(tipAt, this);
-        */
         setTipY(newLoc.getBlockY());
     }
     public void setTipY(int newTipY) {
         log.info("Move tip from "+tipY+" to + " +newTipY);
         tipY = newTipY;
-
-        calculateHeight();  // TODO: rethink
-    }
-
-    private void calculateHeight() {
-        //height = tipAt.y - baseAt.y;
-        height = tipY - baseY;
-        if (Configurator.fixedMaxHeight != 0 && height > Configurator.fixedMaxHeight) {
-            // Above max will not extend range
-            height = Configurator.fixedMaxHeight;
-        } 
     }
 
     public Location getTipLocation() {
-        //return tipAt.getLocation();
         return xz.getLocation(tipY);
     }
 
@@ -255,17 +227,23 @@ class Antenna {
     }
     
     public Location getBaseLocation() {
-        //return baseAt.getLocation();
         return xz.getLocation(baseY);
     }
 
     public int getHeight() {
-        return height;
+        return tipY - baseY;
     }
 
     public int getBroadcastRadius() {
+        int height = getHeight();
+        if (Configurator.fixedMaxHeight != 0 && height > Configurator.fixedMaxHeight) {
+            // Above max will not extend range
+            height = Configurator.fixedMaxHeight;
+        } 
+
+
         // TODO: exponential not multiplicative?
-        int radius = Configurator.fixedInitialRadius + getHeight() * Configurator.fixedRadiusIncreasePerBlock;
+        int radius = Configurator.fixedInitialRadius + height * Configurator.fixedRadiusIncreasePerBlock;
 
         if (xz.world.hasStorm()) {
             radius = (int)((double)radius * Configurator.fixedRadiusStormFactor);
@@ -279,17 +257,14 @@ class Antenna {
 
     // 2D radius within lightning strike will strike base
     public int getLightningAttractRadius() {
-        //int unclampedHeight = tipAt.y - baseAt.y;       // not limited, unlike getHeight()
-        int unclampedHeight = tipY - baseY;
-        int attractRadius = Configurator.fixedLightningAttractRadiusInitial + unclampedHeight * Configurator.fixedLightningAttractRadiusIncreasePerBlock;
+        int attractRadius = Configurator.fixedLightningAttractRadiusInitial + getHeight() * Configurator.fixedLightningAttractRadiusIncreasePerBlock;
 
         return Math.min(attractRadius, Configurator.fixedLightningAttractRadiusMax);
     }
 
     // Explosive power on direct lightning strike
     public float getBlastPower() {
-        int unclampedHeight = tipY - baseY;
-        float power = Configurator.fixedBlastPowerInitial + unclampedHeight * Configurator.fixedBlastPowerIncreasePerBlock;
+        float power = Configurator.fixedBlastPowerInitial + getHeight() * Configurator.fixedBlastPowerIncreasePerBlock;
 
         return Math.min(power, Configurator.fixedBlastPowerMax);
     }
@@ -614,8 +589,7 @@ class PlayerInteractListener extends PlayerListener {
             world.setStorm(true);
 
             world.strikeLightning(block.getLocation());
-        }
-        */
+        }*/
     }
 
     public void onItemHeldChange(PlayerItemHeldEvent event) {
