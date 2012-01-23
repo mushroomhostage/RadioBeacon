@@ -63,7 +63,7 @@ class AntennaXZ implements Comparable {
         AntennaXZ rhs = (AntennaXZ)obj;
 
         if (!world.equals(rhs.world)) {
-            return world.getUID().compareTo(rhs.world.getUID());    // TODO: faster to compare?
+            return world.getName().compareTo(rhs.world.getName());
         }
 
         if (x - rhs.x != 0) {
@@ -90,7 +90,7 @@ class Antenna {
     static Logger log = Logger.getLogger("Minecraft");
 
 
-    static ConcurrentHashMap<AntennaXZ, Antenna> xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();
+    static public ConcurrentHashMap<AntennaXZ, Antenna> xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();
 
     AntennaXZ xz;
     int baseY, tipY;
@@ -110,10 +110,20 @@ class Antenna {
 
     // Load from serialized format (from disk)
     public Antenna(Map<String,Object> d) {
-        World world = Bukkit.getWorld(UUID.fromString((String)d.get("world")));
-        if (world == null) {
-            // TODO: gracefully handle, and skip this antenna (maybe its world was deleted, no big deal)
-            throw new RuntimeException("Antenna loading failed, no world: " + d.get("world"));
+        World world;
+
+        if (d.get("world") != null) {
+            // Legacy world
+            world = Bukkit.getWorld(UUID.fromString((String)d.get("world")));
+            if (world == null) {
+                // TODO: gracefully handle, and skip this antenna (maybe its world was deleted, no big deal)
+                throw new RuntimeException("Antenna loading failed, no world with UUID: " + d.get("world"));
+            }
+        } else {
+            world = Bukkit.getWorld((String)d.get("W"));
+            if (world == null) {
+                throw new RuntimeException("Antenna loading failed, no world with name: "+ d.get("W"));
+            }
         }
 
         if (d.get("baseX") != null) {
@@ -138,7 +148,8 @@ class Antenna {
 
         // For simplicity, dump as a flat data structure
 
-        d.put("world", xz.world.getUID().toString());
+        //d.put("world", xz.world.getUID().toString());
+        d.put("W", xz.world.getName());
 
         d.put("X", xz.x);
         d.put("Z", xz.z);
@@ -780,6 +791,8 @@ class Configurator {
         YamlConfiguration antennaConfig = getAntennaConfig(plugin);
 
         List<Map<String,Object>> all;
+    
+        Antenna.xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();   // clear existing
 
         if (antennaConfig == null || !antennaConfig.isSet("antennas")) {
             log.info("No antennas loaded");
