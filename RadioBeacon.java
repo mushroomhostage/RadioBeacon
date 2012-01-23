@@ -89,7 +89,7 @@ class AntennaXZ implements Comparable {
 class Antenna {
     static Logger log = Logger.getLogger("Minecraft");
 
-
+    // TODO: map by world first! Multi-world support
     static public ConcurrentHashMap<AntennaXZ, Antenna> xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();
 
     AntennaXZ xz;
@@ -163,7 +163,7 @@ class Antenna {
     }
 
     public String toString() {
-        return "<Antenna r="+getBroadcastRadius()+", height="+getHeight()+", xz="+xz+", baseY="+baseY+", tipY="+tipY+" m="+message+">";
+        return "<Antenna r="+getBroadcastRadius()+" height="+getHeight()+" xz="+xz+" baseY="+baseY+" tipY="+tipY+" w="+xz.world.getName()+" m="+message+">";
     }
 
     public static Antenna getAntenna(Location loc) {
@@ -281,6 +281,11 @@ class Antenna {
     }
 
     public boolean withinReceiveRange(Location receptionLoc, int receptionRadius) {
+        if (!xz.world.equals(receptionLoc.getWorld())) {
+            // No cross-world communicatio... yet! TODO: how?
+            return false;
+        }
+
         // Sphere intersection of broadcast range from source
         // TODO: asymmetric send/receive radii?
         return getSourceLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
