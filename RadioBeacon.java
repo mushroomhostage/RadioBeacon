@@ -684,6 +684,10 @@ class Configurator {
 
 
         fixedInitialRadius = plugin.getConfig().getInt("fixedInitialRadius", 100);
+        if (fixedInitialRadius > Math.sqrt(0x80000000)) {
+            // ugh, signed integers
+            log.info("Warning: fixedInitialRadius of " + fixedInitialRadius + " is likely to overflow during antenna range calculations!");
+        }
         fixedRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedRadiusIncreasePerBlock", 100);
         
         fixedLightningAttractRadiusInitial = plugin.getConfig().getInt("fixedLightningAttractRadiusInitial", 10);
