@@ -285,9 +285,10 @@ class Antenna {
             // No cross-world communicatio... yet! TODO: how?
             return false;
         }
-
+       
         // Sphere intersection of broadcast range from source
         // TODO: asymmetric send/receive radii?
+        // Note: on very large radii (50000), this will overflow. Silently. Nothing will be in range.
         return getSourceLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
     }
 
@@ -302,6 +303,10 @@ class Antenna {
     }
 
     private static int square(int x) {
+        if (x * x < 0) {
+            log.info("Warning: square("+x+") overflowed to " + x * x + ", is your antenna radius excessively large?");
+        }
+
         return x * x;
     }
 
