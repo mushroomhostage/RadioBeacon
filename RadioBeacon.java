@@ -293,6 +293,11 @@ class Antenna {
 
     // Return whether location is within a two-dimensional radius of antenna
     public boolean within2DRadius(Location otherLoc, int radius) {
+        if (!xz.world.equals(otherLoc.getWorld())) {
+            // No cross-world communicatio... yet! TODO: how?
+            return false;
+        }
+ 
         Location otherLoc2d = otherLoc.clone();
         Location baseLoc = getBaseLocation();
 
