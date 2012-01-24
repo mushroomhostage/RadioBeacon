@@ -288,7 +288,6 @@ class Antenna {
        
         // Sphere intersection of broadcast range from source
         // TODO: asymmetric send/receive radii?
-        // Note: on very large radii (50000), this will overflow. Silently. Nothing will be in range.
         return getSourceLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
     }
 
@@ -302,12 +301,9 @@ class Antenna {
         return baseLoc.distance(otherLoc2d) < radius;
     }
 
-    private static int square(int x) {
-        if (x * x < 0) {
-            log.info("Warning: square("+x+") overflowed to " + x * x + ", is your antenna radius excessively large?");
-        }
-
-        return x * x;
+    // Square a number, returning a double as to not overflow if x>sqrt(2**31)
+    private static double square(int x) {
+        return (double)x * (double)x;
     }
 
     public int getDistance(Location receptionLoc) {
@@ -684,10 +680,6 @@ class Configurator {
 
 
         fixedInitialRadius = plugin.getConfig().getInt("fixedInitialRadius", 100);
-        if (fixedInitialRadius > Math.sqrt(0x80000000)) {
-            // ugh, signed integers
-            log.info("Warning: fixedInitialRadius of " + fixedInitialRadius + " is likely to overflow during antenna range calculations!");
-        }
         fixedRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedRadiusIncreasePerBlock", 100);
         
         fixedLightningAttractRadiusInitial = plugin.getConfig().getInt("fixedLightningAttractRadiusInitial", 10);
