@@ -658,6 +658,7 @@ class Configurator {
     static int fixedLightningAttractRadiusInitial;
     static int fixedLightningAttractRadiusIncreasePerBlock;
     static int fixedLightningAttractRadiusMax;
+    static boolean fixedWeatherListener;
     static boolean fixedBlastSetFire;
     static float fixedBlastPowerInitial;
     static float fixedBlastPowerIncreasePerBlock;
@@ -690,6 +691,7 @@ class Configurator {
         fixedLightningAttractRadiusInitial = plugin.getConfig().getInt("fixedLightningAttractRadiusInitial", 10);
         fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedLightningAttractRadiusIncreasePerBlock", 1);
         fixedLightningAttractRadiusMax = plugin.getConfig().getInt("fixedLightningAttractRadiusMax", 15);
+        fixedWeatherListener = plugin.getConfig().getBoolean("fixedWeatherListener", true);
 
         fixedBlastSetFire = plugin.getConfig().getBoolean("fixedBlastSetFire", true);
         fixedBlastPowerInitial = (float)plugin.getConfig().getDouble("fixedBlastPowerInitial", 2);
@@ -941,7 +943,9 @@ public class RadioBeacon extends JavaPlugin {
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
         Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_ITEM_HELD, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
 
-        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.LIGHTNING_STRIKE, weatherListener, org.bukkit.event.Event.Priority.Lowest, this);
+        if (Configurator.fixedWeatherListener) {
+            Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.LIGHTNING_STRIKE, weatherListener, org.bukkit.event.Event.Priority.Lowest, this);
+        }
 
         // Compass notification task
         int taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, 
