@@ -391,7 +391,7 @@ class Antenna {
             player.sendMessage("No signals within " + receptionRadius + " m");
         } else if (signalLock) {
             // Player radio compass targetting
-            Integer targetInteger = PlayerInteractListener.playerTargets.get(player);
+            Integer targetInteger = AntennaPlayerListener.playerTargets.get(player);
             Location targetLoc;
             int targetInt;
             if (targetInteger == null) {
@@ -471,11 +471,11 @@ class Antenna {
     }
 }
 
-class BlockPlaceListener implements Listener {
+class AntennaBlockListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
 
-    public BlockPlaceListener(RadioBeacon pl) {
+    public AntennaBlockListener(RadioBeacon pl) {
         plugin = pl;
 
         Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
@@ -643,14 +643,14 @@ class BlockPlaceListener implements Listener {
         */
 }
 
-class PlayerInteractListener implements Listener {
+class AntennaPlayerListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
 
     // Compass targets index selection
     static ConcurrentHashMap<Player, Integer> playerTargets = new ConcurrentHashMap<Player, Integer>();
 
-    public PlayerInteractListener(RadioBeacon pl) {
+    public AntennaPlayerListener(RadioBeacon pl) {
         plugin = pl;
 
         Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
@@ -950,11 +950,11 @@ class Configurator {
     }
 }
 
-class RadioWeatherListener implements Listener {
+class AntennaWeatherListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
     Plugin plugin;
 
-    public RadioWeatherListener(Plugin pl) {
+    public AntennaWeatherListener(Plugin pl) {
         plugin = pl;
             
         Bukkit.getPluginManager().registerEvents(this, plugin);
@@ -1028,11 +1028,11 @@ public class RadioBeacon extends JavaPlugin {
         }
 
 
-        blockListener = new BlockPlaceListener(this);
-        playerListener = new PlayerInteractListener(this);
+        blockListener = new AntennaBlockListener(this);
+        playerListener = new AntennaPlayerListener(this);
 
         if (Configurator.fixedWeatherListener) {
-            weatherListener = new RadioWeatherListener(this);
+            weatherListener = new AntennaWeatherListener(this);
         } else {
             weatherListener = null;
         }
