@@ -440,13 +440,21 @@ class BlockPlaceListener implements Listener {
                 }
             }
         } else if (block.getType() == Configurator.fixedAntennaMaterial) {
-            Block against = event.getBlockAgainst();
-
-            Antenna existingAnt = Antenna.getAntenna(against.getLocation());
-            if (existingAnt != null) {
-                existingAnt.setTipLocation(block.getLocation());
-                player.sendMessage("Extended antenna range to " + existingAnt.getBroadcastRadius() + " m");
+            Antenna ant = Antenna.getAntenna(block.getLocation());
+            if (ant == null) {
+                // No antenna at this xz column to extend
+                return;
             }
+
+            int placedY = block.getLocation().getBlockY();
+            if (placedY < ant.baseY) {
+                // Coincidental placement below antenna
+                return;
+            }
+
+
+            ant.setTipLocation(block.getLocation());
+            player.sendMessage("Extended antenna range to " + ant.getBroadcastRadius() + " m");
         } 
     }
 
