@@ -481,6 +481,12 @@ class BlockPlaceListener implements Listener {
                 return;
             }
 
+            if (placedY > ant.tipY + 1) {
+                // Might be trying to extend, but it is too far above the tip
+                // so is not (yet) contiguous
+                return;
+            }
+
             ant.setTipYAtHighest(placedY);
 
             player.sendMessage("Extended antenna range to " + ant.getBroadcastRadius() + " m");
