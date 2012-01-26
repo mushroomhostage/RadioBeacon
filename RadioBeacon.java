@@ -477,6 +477,14 @@ class BlockPlaceListener implements Listener {
             if (ant == null) {
                 return;
             }
+
+            int destroyedY = block.getLocation().getBlockY();
+
+            if (destroyedY < ant.baseY) {
+                // A coincidental antenna block below the antenna base, ignore
+                return;
+            }
+
             // Verify whole length of antenna is intact
             // TODO
             /*
