@@ -409,15 +409,18 @@ class Antenna {
 
 }
 
-class BlockPlaceListener extends BlockListener {
+class BlockPlaceListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
 
     public BlockPlaceListener(RadioBeacon pl) {
         plugin = pl;
+
+        Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     // Building an antenna
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
         Player player = event.getPlayer();
@@ -448,6 +451,7 @@ class BlockPlaceListener extends BlockListener {
     }
 
     // Destroying an antenna
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         World world = block.getWorld();
@@ -512,6 +516,7 @@ class BlockPlaceListener extends BlockListener {
     }
 
     // Signs to set transmission message
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onSignChange(SignChangeEvent event) {
         Block block = event.getBlock();
         String[] text = event.getLines();
@@ -534,6 +539,7 @@ class BlockPlaceListener extends BlockListener {
 
     // Currently antennas retain their magnetized properties even when redstone current is removed
 /*
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockRedstoneChange(BlockRedstoneEvent event) {
          // TODO: find out how to disable antennas, get when block becomes unpowered
         World world = event.getBlock().getWorld();
@@ -552,7 +558,7 @@ class BlockPlaceListener extends BlockListener {
         */
 }
 
-class PlayerInteractListener extends PlayerListener {
+class PlayerInteractListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
 
@@ -561,8 +567,11 @@ class PlayerInteractListener extends PlayerListener {
 
     public PlayerInteractListener(RadioBeacon pl) {
         plugin = pl;
+
+        Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
         ItemStack item = event.getItem();
@@ -614,6 +623,7 @@ class PlayerInteractListener extends PlayerListener {
         }*/
     }
 
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onItemHeldChange(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItem(event.getNewSlot());
@@ -855,14 +865,17 @@ class Configurator {
     }
 }
 
-class RadioWeatherListener extends WeatherListener {
+class RadioWeatherListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
     Plugin plugin;
 
     public RadioWeatherListener(Plugin pl) {
         plugin = pl;
+            
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onLightningStrike(LightningStrikeEvent event) { 
         World world = event.getWorld();
         Location strikeLocation = event.getLightning().getLocation();
@@ -917,9 +930,9 @@ class RadioWeatherListener extends WeatherListener {
 
 public class RadioBeacon extends JavaPlugin {
     Logger log = Logger.getLogger("Minecraft");
-    BlockListener blockListener;
-    PlayerListener playerListener;
-    RadioWeatherListener weatherListener;
+    Listener blockListener;
+    Listener playerListener;
+    Listener weatherListener;
     ReceptionTask receptionTask;
 
     public void onEnable() {
@@ -932,20 +945,14 @@ public class RadioBeacon extends JavaPlugin {
 
         blockListener = new BlockPlaceListener(this);
         playerListener = new PlayerInteractListener(this);
-        weatherListener = new RadioWeatherListener(this);
-        receptionTask = new ReceptionTask(this);
-
-        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_PLACE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
-        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.BLOCK_BREAK, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
-        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.SIGN_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
-        //TODO? getServer().getPluginManager().registerEvent(org.bukkit.event.Event.Type.REDSTONE_CHANGE, blockListener, org.bukkit.event.Event.Priority.Lowest, this);
-        
-        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_INTERACT, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
-        Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.PLAYER_ITEM_HELD, playerListener, org.bukkit.event.Event.Priority.Lowest, this);
 
         if (Configurator.fixedWeatherListener) {
-            Bukkit.getPluginManager().registerEvent(org.bukkit.event.Event.Type.LIGHTNING_STRIKE, weatherListener, org.bukkit.event.Event.Priority.Lowest, this);
+            weatherListener = new RadioWeatherListener(this);
+        } else {
+            weatherListener = null;
         }
+
+        receptionTask = new ReceptionTask(this);
 
         // Compass notification task
         int taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, 
