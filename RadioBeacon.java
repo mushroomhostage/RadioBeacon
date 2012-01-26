@@ -460,6 +460,12 @@ class BlockPlaceListener implements Listener {
             Antenna ant = Antenna.getAntenna(block.getLocation());
             
             if (ant == null) {
+                // No antenna at this xz column
+                return;
+            }
+
+            if (ant.baseY != block.getLocation().getBlockY()) {
+                // A coincidental iron block above or below the actual antenna base
                 return;
             }
 
