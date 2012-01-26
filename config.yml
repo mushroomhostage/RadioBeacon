@@ -12,6 +12,7 @@ fixedBlastPowerInitial: 2
 fixedBlastPowerIncreasePerBlock: 0.4
 fixedBlastPowerMax: 10
 fixedBlastSetFire: true
+fixedExplosionReactionDelayTicks: 20
 fixedRadiusStormFactor: 0.7     # attenuate/amplify when has storm
 fixedRadiusThunderFactor: 1.1   # attenuate/amplify when is thundering
 fixedMaxHeightMeters: 0         # clamp antenna height

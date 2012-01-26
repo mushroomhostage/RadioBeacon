@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -472,6 +474,27 @@ class Antenna {
     }
 }
 
+
+// Task to check affected antennas after nearby explosion
+class AntennaExplosionReactionTask implements Runnable {
+    Set<AntennaXZ> affected;
+    RadioBeacon plugin;
+
+    public AntennaExplosionReactionTask(RadioBeacon pl, Set<AntennaXZ> a) {
+        plugin = pl;
+        affected = a;
+    }
+
+    public void run() {
+        for (AntennaXZ xz: affected) {
+            Antenna ant = Antenna.getAntenna(xz);
+
+            plugin.log.info("Explosion affected "+ant);
+
+            ant.checkIntact();
+        }
+    }
+}
 class AntennaBlockListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
@@ -601,17 +624,6 @@ class AntennaBlockListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onEntityExplode(EntityExplodeEvent event) {
-        for (Block block: event.blockList()) {
-            Antenna ant = Antenna.getAntenna(block.getLocation());
-            if (ant != null) {
-                log.info("Explosion affected "+ant);
-                ant.checkIntact();
-            }
-        }
-    }
-
     // Signs to set transmission message
     @EventHandler(priority = EventPriority.LOWEST)
     public void onSignChange(SignChangeEvent event) {
@@ -653,7 +665,31 @@ class AntennaBlockListener implements Listener {
         }
     }
     */
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onEntityExplode(EntityExplodeEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+    
+        Set<AntennaXZ> affected = new HashSet<AntennaXZ>();
+
+        for (Block block: event.blockList()) {
+            Antenna ant = Antenna.getAntenna(block.getLocation());
+            if (ant != null) {
+                affected.add(ant.xz);
+
+                log.info("Explosion affected "+ant);
+                ant.checkIntact();
+            }
+        }
+
+        if (affected.size() > 0) {
+            Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new AntennaExplosionReactionTask(plugin, affected), Configurator.fixedExplosionReactionDelay);
+        }
+    }
 }
+
 
 class AntennaPlayerListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
@@ -770,6 +806,7 @@ class Configurator {
     static float fixedBlastPowerInitial;
     static float fixedBlastPowerIncreasePerBlock;
     static float fixedBlastPowerMax;
+    static int fixedExplosionReactionDelay;
     static double fixedRadiusStormFactor;
     static double fixedRadiusThunderFactor;
     static int fixedMaxHeight;
@@ -805,6 +842,7 @@ class Configurator {
         fixedBlastPowerIncreasePerBlock = (float)plugin.getConfig().getDouble("fixedBlastPowerIncreasePerBlock", 0.4);
         fixedBlastPowerMax = (float)plugin.getConfig().getDouble("fixedBlastPowerMax", 10);
 
+        fixedExplosionReactionDelay = plugin.getConfig().getInt("fixedExplosionReactionDelayTicks", 20);
 
         fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);
         fixedRadiusThunderFactor = plugin.getConfig().getDouble("fixedRadiusThunderFactor", 1.1);
