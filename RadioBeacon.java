@@ -446,14 +446,25 @@ class BlockPlaceListener implements Listener {
                 return;
             }
 
+            World world = block.getLocation().getWorld();
+            int x = block.getLocation().getBlockX();
+            int z = block.getLocation().getBlockZ();
             int placedY = block.getLocation().getBlockY();
             if (placedY < ant.baseY) {
                 // Coincidental placement below antenna
                 return;
             }
 
+            // Look up until hit first non-antenna material
+            // If pillaring up, won't enter loop at all
+            // But we have to check, so antennas with gaps can be 'repaired' to extend their
+            // range to their full tip
+            int newTipY = placedY;
+            while(world.getBlockTypeIdAt(x, newTipY, z) == Configurator.fixedAntennaMaterial.getId()) {
+                newTipY += 1;
+            }
 
-            ant.setTipLocation(block.getLocation());
+            ant.setTipY(newTipY);
             player.sendMessage("Extended antenna range to " + ant.getBroadcastRadius() + " m");
         } 
     }
