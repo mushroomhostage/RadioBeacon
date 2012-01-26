@@ -229,6 +229,27 @@ class Antenna {
         tipY = newTipY;
     }
 
+    // Set new tip at highest Y with iron fences, starting at given Y
+    // Will set at or above placedY
+    public void setTipYAtHighest(int placedY) {
+        World world = xz.world;
+        int x = xz.x;
+        int z = xz.z;
+
+        // Starting at location, get the highest Y coordinate in the world that is part of the antenna material
+
+        // Look up until hit first non-antenna material
+        // If pillaring up, won't enter loop at all
+        // But we have to check, so antennas with gaps can be 'repaired' to extend their
+        // range to their full tip
+        int newTipY = placedY;
+        while(world.getBlockTypeIdAt(x, newTipY, z) == Configurator.fixedAntennaMaterial.getId()) {
+            newTipY += 1;
+        }
+
+        setTipY(newTipY);
+    }
+
     public Location getTipLocation() {
         return xz.getLocation(tipY);
     }
@@ -437,7 +458,7 @@ class BlockPlaceListener implements Listener {
                     // look for the highest iron bars above it
                     Location above = block.getLocation().add(0, 1, 0);
                     if (above.getBlock().getType() == Configurator.fixedAntennaMaterial) {
-                        ant.setTipY(getHighestAntennaY(above));
+                        ant.setTipYAtHighest(above.getBlockY());
                     }
 
                     player.sendMessage("New antenna created"); //, with range "+ant.getBroadcastRadius()+" m");
@@ -460,30 +481,10 @@ class BlockPlaceListener implements Listener {
                 return;
             }
 
-            ant.setTipY(getHighestAntennaY(block.getLocation()));
+            ant.setTipYAtHighest(placedY);
 
             player.sendMessage("Extended antenna range to " + ant.getBroadcastRadius() + " m");
         } 
-    }
-
-    // Starting at location, get the highest Y coordinate in the world that is part of the antenna material
-    private int getHighestAntennaY(Location start) {
-        World world = start.getWorld();
-        int x = start.getBlockX();
-        int z = start.getBlockZ();
-
-        int placedY = start.getBlockY();
-
-        // Look up until hit first non-antenna material
-        // If pillaring up, won't enter loop at all
-        // But we have to check, so antennas with gaps can be 'repaired' to extend their
-        // range to their full tip
-        int newTipY = placedY;
-        while(world.getBlockTypeIdAt(x, newTipY, z) == Configurator.fixedAntennaMaterial.getId()) {
-            newTipY += 1;
-        }
-
-        return newTipY;
     }
 
     // Destroying an antenna
