@@ -480,52 +480,31 @@ class BlockPlaceListener implements Listener {
 
             int destroyedY = block.getLocation().getBlockY();
 
-            if (destroyedY < ant.baseY) {
-                // A coincidental antenna block below or above the antenna base, ignore
+            if (destroyedY < ant.baseY || destroyedY > ant.tipY) {
+                // A coincidental antenna block below or above the antenna, ignore
                 return;
             } 
-            if (destroyedY > ant.tipY) {
-                // Another coincidental antenna block above the tip, don't care
-                return;
-            }
 
-            // Verify whole length of antenna is intact
-            // TODO
-            /*
-            for (int y = ant.baseY + 1; y <= ant.tipY; y += 1) {
-                Location locPart = ant.xz.getLocation(y);
-                Block blockPart = world.getBlockAt(locPart);
-                
-                if (block.getType() != Configurator.fixedAntennaMaterial) {
-                    // TODO: use longest length intact
-                    destroy = true;
-                    break;
-                }
-            }*/
+            // Look down from the broken tip, to the first intact antenna/base piece
+            int newTipY = destroyedY;
+            int pieceType;
+            int x = block.getLocation().getBlockX();
+            int z = block.getLocation().getBlockZ();
+            // Nearly always, this will only execute once, but if the antenna changed 
+            // without us knowing, just be sure, and check the block(s) below until
+            // we find valid antenna material. Note, this will only find the first
+            // gap--if somehow other blocks below get destroyed, we won't know.
+            do {
+                newTipY -= 1;
 
-            // Verify whole length of antenna is intact
-            int i = ant.getHeight();
-            boolean destroy = false;
-            while(i > 0) {
-                Location locBelow = ant.getTipLocation().subtract(0, i, 0); 
-                Block blockBelow = world.getBlockAt(locBelow);
+                pieceType = world.getBlockTypeIdAt(x, newTipY, z);
+            } while(pieceType != Configurator.fixedBaseMaterial.getId() &&
+                    pieceType != Configurator.fixedAntennaMaterial.getId() &&
+                    newTipY > 0);
 
-                if (blockBelow.getType() != Configurator.fixedBaseMaterial && blockBelow.getType() != Configurator.fixedAntennaMaterial) {
-                    destroy = true;
-                    break;
-                }
-                
-                i -= 1;
-            }
-            if (destroy) {
-                // Tip became disconnected from base, so destroy
-                // Note: won't detect all cases, only if tip is destroyed (not connecting blocks)
-                event.getPlayer().sendMessage("Destroyed antenna " + ant);
-                Antenna.destroy(ant);
-            } else {
-                ant.setTipLocation(ant.getTipLocation().subtract(0, 1, 0));
-                event.getPlayer().sendMessage("Shrunk antenna range to " + ant.getBroadcastRadius() + " m");
-            }
+            ant.setTipY(newTipY);
+            event.getPlayer().sendMessage("Shrunk antenna range to " + ant.getBroadcastRadius() + " m");
+
             // TODO: also check when destroyed by explosions or other means!
         } else if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
             Antenna ant = Antenna.getAntennaByAdjacent(block.getLocation());
