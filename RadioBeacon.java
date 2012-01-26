@@ -685,7 +685,7 @@ class AntennaBlockListener implements Listener {
         }
 
         if (affected.size() > 0) {
-            Bukkit.getScheduler().scheduleAsyncDelayedTask(plugin, new AntennaExplosionReactionTask(plugin, affected), Configurator.fixedExplosionReactionDelay);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new AntennaExplosionReactionTask(plugin, affected), Configurator.fixedExplosionReactionDelay);
         }
     }
 }
@@ -1090,7 +1090,7 @@ public class RadioBeacon extends JavaPlugin {
         receptionTask = new ReceptionTask(this);
 
         // Compass notification task
-        int taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, 
+        int taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, receptionTask, 
             Configurator.mobileTaskStartDelaySeconds,
             Configurator.mobileTaskPeriodSeconds);
 
