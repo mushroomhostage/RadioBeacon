@@ -17,6 +17,7 @@ import org.bukkit.event.*;
 import org.bukkit.event.block.*;
 import org.bukkit.event.player.*;
 import org.bukkit.event.weather.*;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.Material.*;
 import org.bukkit.block.*;
 import org.bukkit.entity.*;
@@ -427,7 +428,7 @@ class Antenna {
 
     // Check if antenna is intact, what we know about it matching reality
     // Returns whether had to fix it
-    private boolean checkIntact() {
+    public boolean checkIntact() {
         World world = xz.world;
         int x = xz.x;
         int z = xz.z;
@@ -600,6 +601,17 @@ class AntennaBlockListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onEntityExplode(EntityExplodeEvent event) {
+        for (Block block: event.blockList()) {
+            Antenna ant = Antenna.getAntenna(block.getLocation());
+            if (ant != null) {
+                log.info("Explosion affected "+ant);
+                ant.checkIntact();
+            }
+        }
+    }
+
     // Signs to set transmission message
     @EventHandler(priority = EventPriority.LOWEST)
     public void onSignChange(SignChangeEvent event) {
@@ -640,7 +652,7 @@ class AntennaBlockListener implements Listener {
             }
         }
     }
-        */
+    */
 }
 
 class AntennaPlayerListener implements Listener {
