@@ -221,9 +221,6 @@ class Antenna {
     }
 
     // Extend or shrink size of the antenna, updating the new center location
-    public void setTipLocation(Location newLoc) {
-        setTipY(newLoc.getBlockY());
-    }
     public void setTipY(int newTipY) {
         log.info("Move tip from "+tipY+" to + " +newTipY);
         tipY = newTipY;
@@ -428,6 +425,48 @@ class Antenna {
         player.sendMessage("Received transmission (" + distance + " m)" + message);
     }
 
+    private boolean checkIntact() {
+        World world = xz.world;
+        int x = xz.x;
+        int z = xz.z;
+
+        // Base
+        Location base = new Location(world, x, baseY, z);
+        if (base.getBlock() == null || base.getBlock().getType() != Configurator.fixedBaseMaterial) {
+            log.info("checkIntact: antenna is missing base!");
+            destroy(this);
+            return false;
+        }
+
+        // Antenna
+        for (int y = baseY + 1; y < tipY; y += 1) {
+            Location piece = new Location(world, x, y, z);
+
+            if (piece.getBlock() == null || piece.getBlock().getType() != Configurator.fixedAntennaMaterial) {
+                log.info("checkIntact: antenna is shorter than expected!");
+                setTipY(y);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static void checkIntactAll(CommandSender sender) {
+        Iterator it = Antenna.xz2Ant.entrySet().iterator();
+        int count = 0, broken = 0;
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            Antenna ant = (Antenna)pair.getValue();
+
+            if (!ant.checkIntact()) {
+                broken += 1;
+            }
+    
+            count += 1;
+        }
+        sender.sendMessage("Repaired "+broken+" of "+count+" antennas");
+    }
 }
 
 class BlockPlaceListener implements Listener {
@@ -1026,16 +1065,22 @@ public class RadioBeacon extends JavaPlugin {
             if (args[0].equals("list")) {
                 listAntennas(sender);
             } else if (args[0].equals("save")) {
-                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.saveload")) {
+                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
                     Configurator.saveAntennas(this);
                 } else {
                     sender.sendMessage("You do not have permission to save antennas");
                 }
             } else if (args[0].equals("load")) {
-                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.saveload")) {
+                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
                     Configurator.loadAntennas(this);
                 } else {
                     sender.sendMessage("You do not have permission to load antennas");
+                }
+            } else if (args[0].equals("check")) {
+                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
+                    Antenna.checkIntactAll(sender);
+                } else {
+                    sender.sendMessage("You do not have permission to check antennas");
                 }
             }
         } else {
