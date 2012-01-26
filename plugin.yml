@@ -15,5 +15,5 @@ permissions:
         description: Allows you to list the coordinates of all antennas
         default: op
     radiobeacon.admin:
-        description: Allows you to repair or save/load antennas from disk
+        description: Allows you to save/load/repair antennas
         default: op

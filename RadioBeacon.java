@@ -425,6 +425,8 @@ class Antenna {
         player.sendMessage("Received transmission (" + distance + " m)" + message);
     }
 
+    // Check if antenna is intact, what we know about it matching reality
+    // Returns whether had to fix it
     private boolean checkIntact() {
         World world = xz.world;
         int x = xz.x;
@@ -454,18 +456,18 @@ class Antenna {
 
     public static void checkIntactAll(CommandSender sender) {
         Iterator it = Antenna.xz2Ant.entrySet().iterator();
-        int count = 0, broken = 0;
+        int count = 0, fixed = 0;
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             Antenna ant = (Antenna)pair.getValue();
 
             if (!ant.checkIntact()) {
-                broken += 1;
+                fixed += 1;
             }
     
             count += 1;
         }
-        sender.sendMessage("Repaired "+broken+" of "+count+" antennas");
+        sender.sendMessage("Updated "+fixed+" of "+count+" antennas");
     }
 }
 
