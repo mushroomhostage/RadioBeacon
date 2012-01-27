@@ -166,7 +166,9 @@ class Antenna {
     }
 
     public String toString() {
-        return "<Antenna r="+getBroadcastRadius()+" height="+getHeight()+" xz="+xz+" baseY="+baseY+" tipY="+tipY+" w="+xz.world.getName()+" m="+message+">";
+        return "<Antenna r="+getBroadcastRadius()+" height="+getHeight()+" xz="+xz+" baseY="+baseY+" tipY="+tipY+" w="+xz.world.getName()+
+            " l="+getLightningAttractRadius()+" p="+getBlastPower()+
+            " m="+message+">";
     }
 
     public static Antenna getAntenna(Location loc) {
@@ -289,16 +291,16 @@ class Antenna {
 
     // 2D radius within lightning strike will strike base
     public int getLightningAttractRadius() {
-        int attractRadius = Configurator.fixedLightningAttractRadiusInitial + getHeight() * Configurator.fixedLightningAttractRadiusIncreasePerBlock;
+        int attractRadius = (int)(Configurator.fixedLightningAttractRadiusInitial + getHeight() * Configurator.fixedLightningAttractRadiusIncreasePerBlock);
 
         return Math.min(attractRadius, Configurator.fixedLightningAttractRadiusMax);
     }
 
     // Explosive power on direct lightning strike
     public float getBlastPower() {
-        float power = Configurator.fixedBlastPowerInitial + getHeight() * Configurator.fixedBlastPowerIncreasePerBlock;
+        float power = (float)(Configurator.fixedBlastPowerInitial + getHeight() * Configurator.fixedBlastPowerIncreasePerBlock);
 
-        return Math.min(power, Configurator.fixedBlastPowerMax);
+        return Math.min(power, (float)Configurator.fixedBlastPowerMax);
     }
 
     public boolean withinReceiveRange(Location receptionLoc, int receptionRadius) {
@@ -789,13 +791,13 @@ class Configurator {
     static int fixedInitialRadius;
     static int fixedRadiusIncreasePerBlock;
     static int fixedLightningAttractRadiusInitial;
-    static int fixedLightningAttractRadiusIncreasePerBlock;
+    static double fixedLightningAttractRadiusIncreasePerBlock;
     static int fixedLightningAttractRadiusMax;
     static boolean fixedWeatherListener;
     static boolean fixedBlastSetFire;
-    static float fixedBlastPowerInitial;
-    static float fixedBlastPowerIncreasePerBlock;
-    static float fixedBlastPowerMax;
+    static double fixedBlastPowerInitial;
+    static double fixedBlastPowerIncreasePerBlock;
+    static double fixedBlastPowerMax;
     static int fixedExplosionReactionDelay;
     static double fixedRadiusStormFactor;
     static double fixedRadiusThunderFactor;
@@ -823,15 +825,15 @@ class Configurator {
         fixedInitialRadius = plugin.getConfig().getInt("fixedInitialRadius", 100);
         fixedRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedRadiusIncreasePerBlock", 100);
         
-        fixedLightningAttractRadiusInitial = plugin.getConfig().getInt("fixedLightningAttractRadiusInitial", 10);
-        fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedLightningAttractRadiusIncreasePerBlock", 1);
-        fixedLightningAttractRadiusMax = plugin.getConfig().getInt("fixedLightningAttractRadiusMax", 15);
+        fixedLightningAttractRadiusInitial = plugin.getConfig().getInt("fixedLightningAttractRadiusInitial", 3);
+        fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getDouble("fixedLightningAttractRadiusIncreasePerBlock", 0.1);
+        fixedLightningAttractRadiusMax = plugin.getConfig().getInt("fixedLightningAttractRadiusMax", 6);
         fixedWeatherListener = plugin.getConfig().getBoolean("fixedWeatherListener", true);
 
         fixedBlastSetFire = plugin.getConfig().getBoolean("fixedBlastSetFire", true);
-        fixedBlastPowerInitial = (float)plugin.getConfig().getDouble("fixedBlastPowerInitial", 2);
-        fixedBlastPowerIncreasePerBlock = (float)plugin.getConfig().getDouble("fixedBlastPowerIncreasePerBlock", 0.4);
-        fixedBlastPowerMax = (float)plugin.getConfig().getDouble("fixedBlastPowerMax", 10);
+        fixedBlastPowerInitial = plugin.getConfig().getDouble("fixedBlastPowerInitial", 1.0);
+        fixedBlastPowerIncreasePerBlock = plugin.getConfig().getDouble("fixedBlastPowerIncreasePerBlock", 0.4);
+        fixedBlastPowerMax = plugin.getConfig().getDouble("fixedBlastPowerMax", 6.0);
 
         fixedExplosionReactionDelay = plugin.getConfig().getInt("fixedExplosionReactionDelayTicks", 20);
 
