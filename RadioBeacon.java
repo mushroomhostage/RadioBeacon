@@ -793,6 +793,7 @@ class Configurator {
     static int fixedLightningAttractRadiusInitial;
     static double fixedLightningAttractRadiusIncreasePerBlock;
     static int fixedLightningAttractRadiusMax;
+    static boolean fixedLightningDamage;
     static boolean fixedWeatherListener;
     static boolean fixedBlastSetFire;
     static double fixedBlastPowerInitial;
@@ -828,6 +829,7 @@ class Configurator {
         fixedLightningAttractRadiusInitial = plugin.getConfig().getInt("fixedLightningAttractRadiusInitial", 3);
         fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getDouble("fixedLightningAttractRadiusIncreasePerBlock", 0.1);
         fixedLightningAttractRadiusMax = plugin.getConfig().getInt("fixedLightningAttractRadiusMax", 6);
+        fixedLightningDamage = plugin.getConfig().getBoolean("fixedLightningDamage", true);
         fixedWeatherListener = plugin.getConfig().getBoolean("fixedWeatherListener", true);
 
         fixedBlastSetFire = plugin.getConfig().getBoolean("fixedBlastSetFire", true);
@@ -1066,7 +1068,11 @@ class AntennaWeatherListener implements Listener {
 
         if (victimAnt != null) {
             log.info("striking "+victimAnt);
-            world.strikeLightning(victimAnt.getBaseLocation());
+            if (Configurator.fixedLightningDamage) {
+                world.strikeLightning(victimAnt.getBaseLocation());
+            } else {
+                world.strikeLightningEffect(victimAnt.getBaseLocation())e
+            }
         }
     }
 }
