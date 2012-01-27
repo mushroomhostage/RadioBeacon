@@ -312,28 +312,29 @@ class Antenna {
         return getSourceLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
     }
 
-    // Return whether location is within a two-dimensional radius of antenna
-    public boolean within2DRadius(Location otherLoc, int radius) {
-        if (!xz.world.equals(otherLoc.getWorld())) {
-            // No cross-world communicatio... yet! TODO: how?
-            return false;
-        }
- 
-        Location otherLoc2d = otherLoc.clone();
-        Location baseLoc = getBaseLocation();
-
-        otherLoc2d.setY(baseLoc.getY());
-
-        return baseLoc.distance(otherLoc2d) < radius;
-    }
-
     // Square a number, returning a double as to not overflow if x>sqrt(2**31)
     private static double square(int x) {
         return (double)x * (double)x;
     }
 
+    // Get 3D distance from tip
     public int getDistance(Location receptionLoc) {
         return (int)Math.sqrt(getSourceLocation().distanceSquared(receptionLoc));
+    }
+
+    // Get 2D distance from antenna xz
+    public double get2dDistance(Location otherLoc) {
+        Location otherLoc2d = otherLoc.clone();
+        Location baseLoc = getBaseLocation();
+
+        otherLoc2d.setY(baseLoc.getY());
+
+        return baseLoc.distance(otherLoc2d);
+    }
+
+    // Return whether antenna is in same world as other location
+    public boolean inSameWorld(Location otherLoc) {
+        return xz.world.equals(otherLoc.getWorld());
     }
 
     // Receive antenna signals (to this antenna) and show to player
@@ -486,9 +487,11 @@ class AntennaExplosionReactionTask implements Runnable {
         for (AntennaXZ xz: affected) {
             Antenna ant = Antenna.getAntenna(xz);
 
-            plugin.log.info("Explosion affected "+ant);
+            if (ant != null) {
+                plugin.log.info("Explosion affected "+ant);
 
-            ant.checkIntact();
+                ant.checkIntact();
+            }
         }
     }
 }
@@ -1033,12 +1036,20 @@ class AntennaWeatherListener implements Listener {
         }
 
         // Find nearby antennas
+        Antenna victimAnt = null;
+
         for (Map.Entry<AntennaXZ,Antenna> pair : Antenna.xz2Ant.entrySet()) {
             Antenna ant = pair.getValue();
 
+            if (!ant.inSameWorld(strikeLocation)) {
+                // No cross-world lightning strikes!
+                continue;
+            }
+     
             // Within strike range?
-            if (ant.within2DRadius(strikeLocation, ant.getLightningAttractRadius())) {
-                log.info("striking antenna "+ant+", within range "+ant.getLightningAttractRadius()+" of "+strikeLocation);
+            double distance = ant.get2dDistance(strikeLocation);
+            if (distance < ant.getLightningAttractRadius()) {
+                log.info("striking antenna "+ant+", within "+distance+" of "+strikeLocation);
                 world.strikeLightning(ant.getBaseLocation());
             }
         }
