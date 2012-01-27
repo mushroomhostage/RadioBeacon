@@ -1037,7 +1037,7 @@ class AntennaWeatherListener implements Listener {
 
         // Find nearby antennas
         Antenna victimAnt = null;
-        int victimAttract = 0;
+        int victimHeight = 0;
 
         for (Map.Entry<AntennaXZ,Antenna> pair : Antenna.xz2Ant.entrySet()) {
             Antenna ant = pair.getValue();
@@ -1049,14 +1049,13 @@ class AntennaWeatherListener implements Listener {
      
             // Within strike range?
             double distance = ant.get2dDistance(strikeLocation);
-            int attract = ant.getLightningAttractRadius();
-            if (distance < attract) {
+            if (distance < ant.getLightningAttractRadius()) {
                 log.info("strike near antenna "+ant+", within "+distance+" of "+strikeLocation);
-                // Accumulate ant with biggest attract range; strike only one
+                // Only strike the tallest antenna
                 // This allows larger antennas to be built as "lightning rods", attracting
                 // lightning away from other, smaller antennas nearby
-                if (attract > victimAttract) {
-                    victimAttract = attract;
+                if (ant.getHeight() > victimHeight) {
+                    victimHeight = ant.getHeight();
                     victimAnt = ant;
                 }
             }
