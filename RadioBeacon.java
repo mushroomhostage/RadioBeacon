@@ -372,14 +372,12 @@ class Antenna {
 
     // Receive signals from standing at any location
     static public void receiveSignals(Player player, Location receptionLoc, int receptionRadius, boolean signalLock) {
-        Iterator it = Antenna.xz2Ant.entrySet().iterator();
         int count = 0;
         List<Antenna> nearbyAnts = new ArrayList<Antenna>();
 
         // TODO: can we get deterministic iteration order? for target index
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            Antenna otherAnt = (Antenna)pair.getValue();
+        for (Map.Entry<AntennaXZ,Antenna> pair : Antenna.xz2Ant.entrySet()) {
+            Antenna otherAnt = pair.getValue();
 
             if (otherAnt.withinReceiveRange(receptionLoc, receptionRadius)) {
                 //log.info("Received transmission from " + otherAnt);
@@ -458,11 +456,10 @@ class Antenna {
     }
 
     public static void checkIntactAll(CommandSender sender) {
-        Iterator it = Antenna.xz2Ant.entrySet().iterator();
         int count = 0, fixed = 0;
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            Antenna ant = (Antenna)pair.getValue();
+
+        for (Map.Entry<AntennaXZ,Antenna> pair : Antenna.xz2Ant.entrySet()) {
+            Antenna ant = pair.getValue();
 
             if (!ant.checkIntact()) {
                 fixed += 1;
@@ -968,12 +965,10 @@ class Configurator {
         ArrayList<HashMap<String,Object>> all = new ArrayList<HashMap<String,Object>>();
         YamlConfiguration antennaConfig = getAntennaConfig(plugin);
 
-        //Iterator it = Antenna.tipsAt.entrySet().iterator();
-        Iterator it = Antenna.xz2Ant.entrySet().iterator();
         int count = 0;
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            Antenna ant = (Antenna)pair.getValue();
+
+        for (Map.Entry<AntennaXZ,Antenna> pair : Antenna.xz2Ant.entrySet()) {
+            Antenna ant = pair.getValue();
     
             all.add(ant.dump());
             count += 1;
@@ -1037,18 +1032,13 @@ class AntennaWeatherListener implements Listener {
             return;
         }
 
-        //Iterator it = Antenna.basesAt.entrySet().iterator();
-        Iterator it = Antenna.xz2Ant.entrySet().iterator();
-
         // Find nearby antennas
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            Antenna ant = (Antenna)pair.getValue();
+        for (Map.Entry<AntennaXZ,Antenna> pair : Antenna.xz2Ant.entrySet()) {
+            Antenna ant = pair.getValue();
 
             // Within strike range?
             if (ant.within2DRadius(strikeLocation, ant.getLightningAttractRadius())) {
                 log.info("striking antenna "+ant+", within range "+ant.getLightningAttractRadius()+" of "+strikeLocation);
-                //world.strikeLightning(ant.baseAt.getLocation());
                 world.strikeLightning(ant.getBaseLocation());
             }
         }
@@ -1146,15 +1136,12 @@ public class RadioBeacon extends JavaPlugin {
 
     // Show either all antennas information, if have permission, or count only if not
     private void listAntennas(CommandSender sender) {
-        //Iterator it = Antenna.tipsAt.entrySet().iterator();
-        Iterator it = Antenna.xz2Ant.entrySet().iterator();
         int count = 0;
         boolean reveal = !(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.reveal");
 
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            AntennaXZ xz = (AntennaXZ)pair.getKey();
-            Antenna ant = (Antenna)pair.getValue();
+        for (Map.Entry<AntennaXZ,Antenna> pair : Antenna.xz2Ant.entrySet()) {
+            AntennaXZ xz = pair.getKey();
+            Antenna ant = pair.getValue();
 
             if (reveal) {
                 sender.sendMessage("Antenna: " + ant);
