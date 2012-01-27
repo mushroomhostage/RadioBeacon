@@ -339,7 +339,7 @@ class Antenna {
 
     // Receive antenna signals (to this antenna) and show to player
     public void receiveSignals(Player player) {
-        player.sendMessage("Antenna range: " + getBroadcastRadius() + " m, lightning attraction: " + getLightningAttractRadius() + " m" + ", blast power: " + getBlastPower());
+        player.sendMessage("Antenna range: " + getBroadcastRadius() + " m"); //, lightning attraction: " + getLightningAttractRadius() + " m" + ", blast power: " + getBlastPower());
 
         receiveSignals(player, getSourceLocation(), getBroadcastRadius(), false);
     }

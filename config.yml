@@ -7,7 +7,7 @@ fixedLightningAttractRadiusInitial: 3
 fixedLightningAttractRadiusIncreasePerBlock: 1
 fixedLightningAttractRadiusMax: 6
 fixedWeatherListener: true      # listen for lightning?
-# Explosive power when tower struck by lightning (ghast fireball=1, creeper=2, TNT=4)
+# Explosive power when tower struck by lightning (ghast fireball=1, creeper=3, TNT=4)
 fixedBlastPowerInitial: 2
 fixedBlastPowerIncreasePerBlock: 0.4
 fixedBlastPowerMax: 10
