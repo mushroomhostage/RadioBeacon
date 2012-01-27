@@ -1010,11 +1010,12 @@ class AntennaWeatherListener implements Listener {
         Antenna directAnt = Antenna.getAntenna(strikeLocation);
         if (directAnt != null) {
 
-            // Direct hit!
-            log.info("directly hit "+directAnt);
-
             float power = directAnt.getBlastPower();
             Location baseLoc = directAnt.getBaseLocation();
+
+            // Direct hit!
+            log.info("directly hit "+directAnt+", exploding with power "+power);
+
 
             if (power > 0) {
                 world.createExplosion(baseLoc, power, Configurator.fixedBlastSetFire);
