@@ -744,16 +744,6 @@ class AntennaPlayerListener implements Listener {
             player.sendMessage("Tuned radio" + (receptionRadius == 0 ? "" : " (range " + receptionRadius + " m)"));
 
         }
-        /*
-        // For testing purposes, strike lightning
-        // TODO: remove
-        else if (item != null && item.getType() == Material.DIAMOND_SWORD && block != null && event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            World world = block.getWorld();
-
-            world.setStorm(true);
-
-            world.strikeLightning(block.getLocation());
-        }*/
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
