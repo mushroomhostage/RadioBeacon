@@ -1071,7 +1071,7 @@ class AntennaWeatherListener implements Listener {
             if (Configurator.fixedLightningDamage) {
                 world.strikeLightning(victimAnt.getBaseLocation());
             } else {
-                world.strikeLightningEffect(victimAnt.getBaseLocation())e
+                world.strikeLightningEffect(victimAnt.getBaseLocation());
             }
         }
     }

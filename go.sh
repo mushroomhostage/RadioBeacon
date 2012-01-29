@@ -1,5 +1,5 @@
 #!/bin/sh -x
-CLASSPATH=../craftbukkit-1.1-R1.jar javac *.java -Xlint:deprecation
+CLASSPATH=../craftbukkit-1.1-R2.jar javac *.java -Xlint:deprecation
 rm -rf me 
 mkdir -p me/exphc/RadioBeacon
 mv *.class me/exphc/RadioBeacon
