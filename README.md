@@ -1,8 +1,12 @@
-RadioBeacon - build radio towers, navigate using compasses
+RadioBeacon - build radio towers, navigate to them using compasses!
 
+Help your players find each other or other places of interest by building radio towers,
+broadcasting signals to be picked up by anyone within range and the proper equipment. 
+
+Works great on "random spawn point" (solitude/apocalypse) themed servers.
 
 ## Features
-* Using existing in-game items (iron blocks, bars, compasses), no client mods or commands needed
+* Uses existing in-game items (iron blocks, bars, compasses), no client mods or commands needed
 * Antennas continuously transmit, larger antennas further
 * Message can be included in transmissions
 * Tune compasses to received transmission, navigate to the source
@@ -31,8 +35,8 @@ antenna tip can be destroyed to decrease the radius, or broken in the middle, an
 behaves as you would expect, broadcasting from the highest contiguous iron bar.
 
 *Helpful tip*: enderpearls work very well for maintaining tall antennas. Thrown just right,
-they will let you teleport inside of the iron bars, without falling, and also safely get
-back down. Other teleportation mechanisms (such as Bow + Feather Falling enchantment
+they will let you teleport inside of the iron bars, without falling, and also help you safely get
+back down. Other teleportation mechanisms (such as the Bow + Feather Falling enchantment
 from [EnchantMore](http://dev.bukkit.org/server-mods/enchantmore/)) can also be helpful,
 or worst case, you could always pillar up.
 
@@ -75,5 +79,13 @@ Subcommands:
 * /antennas save: Force saving antennas to disk (antennas.yml)
 * /antennas load: Force reload from disk
 * /antennas check: Compare all antennas against the actual blocks in the world, rebuilding the internal state if necessary. Should not be necessary during normal gameplay, but if blocks are updated without RadioBeacon receiving any events (for example, by editing the world in MCEdit), admins can use this command to repair any affected antennas.
+
+
+## See Also
+
+* [Cake's Miner Apocalypse](http://dev.bukkit.org/server-mods/cakes-miner-apocalypse/) - a significant inspiration for RadioBeacon, with a somewhat different realization of radios; also includes many other apocalypse-related features
+
+* [ApocalypseCraft](http://forums.bukkit.org/threads/wgen-rpg-mech-apocalypsecraft-instances-radiation-realism-perks-factions-and-more.23197/) - 
+ ([notes](http://www.reddit.com/r/minerapocalypse/comments/oyhpq/anyone_else_see_this_plugin_apocalypsecraft/))
 
 
