@@ -6,7 +6,8 @@ broadcasting signals to be picked up by anyone within range and the proper equip
 Works great on "random spawn point" (solitude/apocalypse) themed servers.
 
 ## Features
-* Uses existing in-game items (iron blocks, bars, compasses), no client mods or commands needed
+* Uses existing in-game items (iron blocks, bars, compasses)
+* No commands or client mods needed
 * Antennas continuously transmit, larger antennas further
 * Message can be included in transmissions
 * Tune compasses to received transmission, navigate to the source
