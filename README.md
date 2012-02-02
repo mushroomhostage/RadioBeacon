@@ -5,18 +5,18 @@ broadcasting signals to be picked up by anyone within range and the proper equip
 
 Works great on "random spawn point" (solitude/apocalypse) themed servers.
 
-## Features
+# Features
 * Uses existing in-game items (iron blocks, bars, compasses)
 * No commands or client mods needed
-* Antennas continuously transmit, larger antennas further
+* Antennas continuously transmit, larger antennas transmit further
 * Message can be included in transmissions
 * Tune compasses to received transmission, navigate to the source
-* High-performance and light-weight
+* High-performance and light-weight implementation
 * Receive transmissions even if chunk is unloaded
 * Antennas are affected by weather 
 * Multi-world aware
 
-## Usage
+# Usage
 
 ### Fixed Antenna Towers
 [Screenshots](http://imgur.com/a/Ft06F)
@@ -28,25 +28,16 @@ a three-dimensional spherical range, available to be received by other fixed ant
 (simply click the iron block to show the received signals) or mobile radios
 (compasses held in your hand automatically scan for signals periodically).
 
-#### Extending Range
-To transmit and receive further, place any number of iron bars on top of the iron block.
+**Extending Range**: To transmit and receive further, place any number of iron bars on top of the iron block.
 
 As you build up, the new antenna radius will be shown to you in the chat area. The 
 antenna tip can be destroyed to decrease the radius, or broken in the middle, and it 
 behaves as you would expect, broadcasting from the highest contiguous iron bar.
 
-*Helpful tip*: enderpearls work very well for maintaining tall antennas. Thrown just right,
-they will let you teleport inside of the iron bars, without falling, and also help you safely get
-back down. Other teleportation mechanisms (such as the Bow + Feather Falling enchantment
-from [EnchantMore](http://dev.bukkit.org/server-mods/enchantmore/)) can also be helpful,
-or worst case, you could always pillar up.
-
-#### Setting Messages
-Attach a sign to the side of your fixed antenna base, and the text of the sign will 
+**Setting Messages**: Attach a sign to the side of your fixed antenna base, and the text of the sign will 
 automatically be included in the transmission.
 
-#### Weather
-Rain decreases the transmission and reception radius. Thundering slightly increases it,
+**Weather**: Rain decreases the transmission and reception radius. Thundering slightly increases it,
 but lightning has a chance to strike antennas, causing their destruction.
 
 [Screenshots](http://imgur.com/a/qrh1A)
@@ -63,6 +54,19 @@ will turn off scanning.
 
 To tune into a signal, left- or right-click the compass. The next scan will report
 which signal you have locked onto, and the compass needle will point in its direction.
+
+### Tips & Tricks
+Enderpearls work very well for maintaining tall antennas. Thrown just right,
+they will let you teleport inside of the iron bars, without falling, and also help you safely get
+back down. Other teleportation mechanisms (such as the Bow + Feather Falling enchantment
+from [EnchantMore](http://dev.bukkit.org/server-mods/enchantmore/)) can also be helpful,
+or worst case, you could always pillar up.
+
+If you are worried about lightning strikes (note: the lightning attraction can be
+tweaked in the configuration, and the damage can be disabled entirely if desired), 
+you can build an additional, taller antenna to act as a sort of "lightning rod" and detract lightning 
+away from your other antennas. Encase the iron block in obsidian or water to contain the
+explosion damage.
 
 ## Configuration
 RadioBeacon is highly configurable. For a full list of configuration options, see config.yml.
@@ -82,11 +86,13 @@ Subcommands:
 * /antennas check: Compare all antennas against the actual blocks in the world, rebuilding the internal state if necessary. Should not be necessary during normal gameplay, but if blocks are updated without RadioBeacon receiving any events (for example, by editing the world in MCEdit), admins can use this command to repair any affected antennas.
 
 
+## Servers
+* [Solitude - An Apocalypse Server (Blocktopia)](http://blocktopia.net/forum/threads/solitude-an-apocalypse-server.4712/)
+
 ## See Also
 
 * [Cake's Miner Apocalypse](http://dev.bukkit.org/server-mods/cakes-miner-apocalypse/) - a significant inspiration for RadioBeacon, with a somewhat different realization of radios; also includes many other apocalypse-related features
 
 * [ApocalypseCraft](http://forums.bukkit.org/threads/wgen-rpg-mech-apocalypsecraft-instances-radiation-realism-perks-factions-and-more.23197/) - 
  ([notes](http://www.reddit.com/r/minerapocalypse/comments/oyhpq/anyone_else_see_this_plugin_apocalypsecraft/))
-
 
