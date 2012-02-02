@@ -7,6 +7,7 @@ fixedLightningAttractRadiusInitial: 3
 fixedLightningAttractRadiusIncreasePerBlock: 0.1
 fixedLightningAttractRadiusMax: 6
 fixedLightningDamage: true      # cause real damage on attracted strikes, not just effects
+fixedLightningStrikeOne: true   # strike tallest antenna within range if true, otherwise, all
 fixedWeatherListener: true      # listen for lightning at all?
 # Explosive power when tower struck by lightning (ghast fireball=1, creeper=3, TNT=4)
 fixedBlastPowerInitial: 1

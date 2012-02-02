@@ -794,6 +794,7 @@ class Configurator {
     static double fixedLightningAttractRadiusIncreasePerBlock;
     static int fixedLightningAttractRadiusMax;
     static boolean fixedLightningDamage;
+    static boolean fixedLightningStrikeOne;
     static boolean fixedWeatherListener;
     static boolean fixedBlastSetFire;
     static double fixedBlastPowerInitial;
@@ -830,6 +831,7 @@ class Configurator {
         fixedLightningAttractRadiusIncreasePerBlock = plugin.getConfig().getDouble("fixedLightningAttractRadiusIncreasePerBlock", 0.1);
         fixedLightningAttractRadiusMax = plugin.getConfig().getInt("fixedLightningAttractRadiusMax", 6);
         fixedLightningDamage = plugin.getConfig().getBoolean("fixedLightningDamage", true);
+        fixedLightningStrikeOne = plugin.getConfig().getBoolean("fixedLightningStrikeOne", true);
         fixedWeatherListener = plugin.getConfig().getBoolean("fixedWeatherListener", true);
 
         fixedBlastSetFire = plugin.getConfig().getBoolean("fixedBlastSetFire", true);
@@ -1056,23 +1058,37 @@ class AntennaWeatherListener implements Listener {
             double distance = ant.get2dDistance(strikeLocation);
             if (distance < ant.getLightningAttractRadius()) {
                 log.info("strike near antenna "+ant+", within "+distance+" of "+strikeLocation);
-                // Only strike the tallest antenna
-                // This allows larger antennas to be built as "lightning rods", attracting
-                // lightning away from other, smaller antennas nearby
-                if (ant.getHeight() > victimHeight) {
-                    victimHeight = ant.getHeight();
-                    victimAnt = ant;
+
+                if (Configurator.fixedLightningStrikeOne) {
+                    // Only strike the tallest antenna
+                    // This allows larger antennas to be built as "lightning rods", attracting
+                    // lightning away from other, smaller antennas nearby
+                    if (ant.getHeight() > victimHeight) {
+                        victimHeight = ant.getHeight();
+                        victimAnt = ant;
+                    }
+                } else {
+                    // Strike all antennas within range! Triple strike!
+                    strikeAntenna(ant);
                 }
             }
         }
 
         if (victimAnt != null) {
-            log.info("striking "+victimAnt);
-            if (Configurator.fixedLightningDamage) {
-                world.strikeLightning(victimAnt.getBaseLocation());
-            } else {
-                world.strikeLightningEffect(victimAnt.getBaseLocation());
-            }
+            strikeAntenna(victimAnt);
+        }
+    }
+
+    // Strike an antenna with lightning
+    private void strikeAntenna(Antenna victimAnt) {
+        log.info("striking "+victimAnt);
+
+        World world = victimAnt.xz.world;
+
+        if (Configurator.fixedLightningDamage) {
+            world.strikeLightning(victimAnt.getBaseLocation());
+        } else {
+            world.strikeLightningEffect(victimAnt.getBaseLocation());
         }
     }
 }
