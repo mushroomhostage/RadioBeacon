@@ -137,6 +137,8 @@ class Antenna {
         xz2Ant.put(xz, this);
 
         log.info("New antenna " + this);
+
+        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(this));
     }
 
     // Load from serialized format (from disk)
@@ -229,6 +231,7 @@ class Antenna {
         }
 
         log.info("Destroyed antenna " + ant);
+        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(ant));
     }
 
     /*
@@ -257,6 +260,8 @@ class Antenna {
     public void setTipY(int newTipY) {
         log.info("Move tip from "+tipY+" to + " +newTipY);
         tipY = newTipY;
+
+        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(this));
     }
 
     // Set new tip at highest Y with iron fences, starting at given Y
@@ -1118,6 +1123,28 @@ class AntennaWeatherListener implements Listener {
         } else {
             world.strikeLightningEffect(victimAnt.getBaseLocation());
         }
+    }
+}
+
+class AntennaChangeEvent extends Event {
+    private final Antenna antenna;
+
+    public AntennaChangeEvent(Antenna antenna) {
+        this.antenna = antenna;
+    }
+
+    public Antenna getAntenna() {
+        return antenna;
+    }
+
+    // http://wiki.bukkit.org/Introduction_to_the_New_Event_System#Creating_Custom_Events
+    private static final HandlerList handlers = new HandlerList();
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 }
 

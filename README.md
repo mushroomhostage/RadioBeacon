@@ -68,6 +68,11 @@ you can build an additional, taller antenna to act as a sort of "lightning rod" 
 away from your other antennas. Encase the iron block in obsidian or water to contain the
 explosion damage.
 
+Antennas work great underground. Increase the range in the configuration file and have your
+players use compasses to locate buried treasure. Or want to encourage highly visible above-ground 
+towers? Set the minimum base antenna Y in the configuration, and lower the radius increase per
+block.
+
 ## Configuration
 RadioBeacon is highly configurable. For a full list of configuration options, see config.yml.
 
