@@ -534,10 +534,15 @@ class AntennaBlockListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
 
-    public AntennaBlockListener(RadioBeacon pl) {
-        plugin = pl;
+    public AntennaBlockListener(RadioBeacon plugin) {
+        this.plugin = plugin;
 
         Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    @EventHandler
+    public void onAntennaChange(AntennaChangeEvent event) {
+        plugin.log.info("Cool it worked! "+event);
     }
 
     // Building an antenna
