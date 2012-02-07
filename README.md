@@ -95,6 +95,8 @@ Subcommands:
 ## Servers
 * [Solitude - An Apocalypse Server (Blocktopia)](http://blocktopia.net/forum/threads/solitude-an-apocalypse-server.4712/)
 
+Got a server running this plugin? Feel free to post about it below.
+
 ## See Also
 
 * [Cake's Miner Apocalypse](http://dev.bukkit.org/server-mods/cakes-miner-apocalypse/) - a significant inspiration for RadioBeacon, with a somewhat different realization of radios; also includes many other apocalypse-related features
