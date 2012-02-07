@@ -762,6 +762,17 @@ class AntennaPlayerListener implements Listener {
             }
 
             ant.receiveSignals(player);
+        } else if (block != null && block.getType() == Material.WALL_SIGN) {
+            for (int dx = -1; dx <= 1; dx += 1) {
+                for (int dz = -1; dz <= 1; dz += 1) {
+                    Antenna ant = Antenna.getAntenna(block.getLocation().add(dx, 0, dz));
+
+                    if (ant != null) {
+                        ant.receiveSignals(player);
+                    }
+                }
+            }
+
             // TODO: also activate if click the _sign_ adjacent to the base
             // TODO: and if click anywhere within antenna? maybe not unless holding compass
         } else if (item != null && item.getType() == Material.COMPASS) {
