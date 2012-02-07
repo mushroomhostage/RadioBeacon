@@ -402,6 +402,8 @@ class Antenna {
         int n = item.getAmount() - 1;
         int receptionRadius = Configurator.mobileInitialRadius + n * Configurator.mobileIncreaseRadius;
 
+        receptionRadius = Math.min(receptionRadius, Configurator.mobileMaxRadius);
+
         return receptionRadius;
     }
 
@@ -538,11 +540,6 @@ class AntennaBlockListener implements Listener {
         this.plugin = plugin;
 
         Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    @EventHandler
-    public void onAntennaChange(AntennaChangeEvent event) {
-        plugin.log.info("Cool it worked! "+event);
     }
 
     // Building an antenna
@@ -850,6 +847,7 @@ class Configurator {
 
     static int mobileInitialRadius;
     static int mobileIncreaseRadius;
+    static int mobileMaxRadius;
     static int mobileTaskStartDelaySeconds;
     static int mobileTaskPeriodSeconds;
     static boolean mobileTaskSync;
@@ -919,6 +917,7 @@ class Configurator {
 
         mobileInitialRadius = plugin.getConfig().getInt("mobileInitialRadius", 0);
         mobileIncreaseRadius = plugin.getConfig().getInt("mobileIncreaseRadius", 10);
+        mobileMaxRadius = plugin.getConfig().getInt("mobileMaxRadius", 10000);
         int TICKS_PER_SECOND = 20;
         mobileTaskStartDelaySeconds = plugin.getConfig().getInt("mobileTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
         mobileTaskPeriodSeconds = plugin.getConfig().getInt("mobileTaskPeriodSeconds", 20) * TICKS_PER_SECOND;
@@ -1153,6 +1152,13 @@ class AntennaChangeEvent extends Event {
     }
 }
 
+/*
+class AntennaNetworkListener implements Listener {
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onAntennaChange(AntennaChangeEvent event) {
+        plugin.log.info("Cool it worked! "+event);
+    }
+}*/
 
 public class RadioBeacon extends JavaPlugin {
     Logger log = Logger.getLogger("Minecraft");
@@ -1171,6 +1177,7 @@ public class RadioBeacon extends JavaPlugin {
 
         blockListener = new AntennaBlockListener(this);
         playerListener = new AntennaPlayerListener(this);
+        //networkListener = new AntennaNetworkListener(this);
 
         if (Configurator.fixedWeatherListener) {
             weatherListener = new AntennaWeatherListener(this);
