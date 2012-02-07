@@ -1,4 +1,4 @@
-X 0.10
+2012-02-06  0.10
     * Add mobileMaxRadius configuration option to cap compass radio reception
     * Add weather-affected compass options, mobileRadiusStormFactor and mobileRadiusThunderFactor 
     * Allow clicking attached sign (not only the iron block) to receive signals at a fixed antenna
