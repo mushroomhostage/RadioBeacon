@@ -389,7 +389,7 @@ class Antenna {
         }
 
         Location receptionLoc = player.getLocation();
-        int receptionRadius = getCompassRadius(item);
+        int receptionRadius = getCompassRadius(item, player.getWorld());
 
         Antenna.receiveSignals(player, receptionLoc, receptionRadius, true);
     }
@@ -397,10 +397,18 @@ class Antenna {
     // Get reception radius for a stack of compasses
     // The default of one compass has a radius of 0, meaning you must be directly within range,
     // but more compasses can increase the range further
-    static public int getCompassRadius(ItemStack item) {
+    static public int getCompassRadius(ItemStack item, World world) {
         // Bigger stack of compasses = better reception!
         int n = item.getAmount() - 1;
         int receptionRadius = Configurator.mobileInitialRadius + n * Configurator.mobileIncreaseRadius;
+
+        if (world.hasStorm()) {
+            receptionRadius = (int)((double)receptionRadius * Configurator.mobileRadiusStormFactor);
+        }
+        if (world.isThundering()) {
+            receptionRadius = (int)((double)receptionRadius * Configurator.mobileRadiusThunderFactor);
+        }
+
 
         receptionRadius = Math.min(receptionRadius, Configurator.mobileMaxRadius);
 
@@ -777,7 +785,7 @@ class AntennaPlayerListener implements Listener {
                 // TODO: cycle back if right-click
                 playerTargets.put(player, targetInt);
             }
-            int receptionRadius = Antenna.getCompassRadius(item);
+            int receptionRadius = Antenna.getCompassRadius(item, player.getWorld());
             player.sendMessage("Tuned radio" + (receptionRadius == 0 ? "" : " (range " + receptionRadius + " m)"));
 
         }
@@ -848,6 +856,8 @@ class Configurator {
     static int mobileInitialRadius;
     static int mobileIncreaseRadius;
     static int mobileMaxRadius;
+    static double mobileRadiusStormFactor;
+    static double mobileRadiusThunderFactor;
     static int mobileTaskStartDelaySeconds;
     static int mobileTaskPeriodSeconds;
     static boolean mobileTaskSync;
@@ -918,6 +928,10 @@ class Configurator {
         mobileInitialRadius = plugin.getConfig().getInt("mobileInitialRadius", 0);
         mobileIncreaseRadius = plugin.getConfig().getInt("mobileIncreaseRadius", 10);
         mobileMaxRadius = plugin.getConfig().getInt("mobileMaxRadius", 10000);
+        mobileRadiusStormFactor = plugin.getConfig().getDouble("mobileRadiusStormFactor", 1.0);
+        mobileRadiusThunderFactor = plugin.getConfig().getDouble("mobileRadiusThunderFactor", 1.0);
+
+
         int TICKS_PER_SECOND = 20;
         mobileTaskStartDelaySeconds = plugin.getConfig().getInt("mobileTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
         mobileTaskPeriodSeconds = plugin.getConfig().getInt("mobileTaskPeriodSeconds", 20) * TICKS_PER_SECOND;

@@ -32,6 +32,8 @@ fixedUnpoweredNagMessage: 'Tip: remove and place this block near redstone curren
 mobileInitialRadius: 0
 mobileIncreaseRadius: 10
 mobileMaxRadius: 10000
+mobileRadiusStormFactor: 1.0
+mobileRadiusThunderFactor: 1.0
 mobileTaskStartDelaySeconds: 0
 mobileTaskPeriodSeconds: 15
 mobileTaskSync: true            # whether to run in thread-safe task on the main thread
