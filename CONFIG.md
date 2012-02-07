@@ -1,4 +1,4 @@
-RadioBeacon Configuration
+# RadioBeacon Configuration
 
 config.yml is created on first launch, populated with reasonable defaults. However,
 it is recommended you tweak the settings as appropriate for your server.
@@ -87,13 +87,27 @@ before the antenna updates itself.
 
 
 ## Mobile Compass Radios
+**mobileInitialRadius**: The "reception radius" in meters when you hold a single compass.
+0 means you must be directly within the spherical radius of the transmitting antenna, anything higher
+allows you to receive signals when further away (beyond the normal radius). 
 
-# Mobile compass radios
-mobileInitialRadius: 0
-mobileIncreaseRadius: 10
-mobileMaxRadius: 10000
-mobileRadiusStormFactor: 1.0
-mobileRadiusThunderFactor: 1.0
-mobileTaskStartDelaySeconds: 0
-mobileTaskPeriodSeconds: 15
-mobileTaskSync: true            # whether to run in thread-safe task on the main thread
+**mobileIncreaseRadius**: Reception radius increase for each extra compass held in a stack
+by the player. 
+
+**mobileMaxRadius**: The highest reception radius allowed. Note that players can stack compasses
+up to 64. If the range is too high you can cap it with this option.
+
+**mobileRadiusStormFactor**: Multiply reception radius by this floating-point number during a storm,
+just like fixedRadiusStormFactor but for compasses.
+
+**mobileRadiusThunderFactor**: Same as fixedRadiusThunderFactor but for compasses.
+
+**mobileTaskStartDelaySeconds**: Delay after the server starts up before beginning the mobile radio
+scanning task.
+
+**mobileTaskPeriodSeconds**: Period of the scanning task. Every so many seconds, players holding
+compasses will receive reports of signals within range. Set lower to make compasses receive faster,
+higher to reduce server load.
+
+**mobileTaskSync**: Whether to run the task on the main thread. Required for thread-safety.
+
