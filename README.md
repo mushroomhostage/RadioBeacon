@@ -74,7 +74,8 @@ towers? Set the minimum base antenna Y in the configuration, and lower the radiu
 block.
 
 ## Configuration
-RadioBeacon is highly configurable. For a full list of configuration options, see config.yml.
+RadioBeacon is highly configurable for a variety of applications. 
+For a full list of configuration options, see [config.yml](http://dev.bukkit.org/server-mods/radiobeacon/pages/configuration/).
 
 ## Permissions and Commands
 RadioBeacon only adds one new command, /antennas. Players can use it to see the total number of
