@@ -451,7 +451,8 @@ class Antenna {
             targetLoc = antLoc.getSourceLocation();
             player.setCompassTarget(targetLoc);
 
-            player.sendMessage("Locked onto signal at " + antLoc.getDistance(player.getLocation()) + " m: " + antLoc.getMessage());
+            String message = antLoc.getMessage();
+            player.sendMessage("Locked onto signal at " + antLoc.getDistance(player.getLocation()) + " m" + (message == null ? "" : ": " + message));
             //log.info("Targetting " + targetLoc);
         }
     }
