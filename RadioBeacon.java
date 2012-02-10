@@ -389,7 +389,7 @@ class Antenna {
         }
 
         Location receptionLoc = player.getLocation();
-        int receptionRadius = getCompassRadius(item, player.getWorld());
+        int receptionRadius = getCompassRadius(item, player);
 
         Antenna.receiveSignals(player, receptionLoc, receptionRadius, true);
     }
@@ -397,10 +397,20 @@ class Antenna {
     // Get reception radius for a stack of compasses
     // The default of one compass has a radius of 0, meaning you must be directly within range,
     // but more compasses can increase the range further
-    static public int getCompassRadius(ItemStack item, World world) {
+    static public int getCompassRadius(ItemStack item, Player player) {
+        World world = player.getWorld();
+
         // Bigger stack of compasses = better reception!
         int n = item.getAmount() - 1;
         int receptionRadius = Configurator.mobileInitialRadius + n * Configurator.mobileIncreaseRadius;
+
+        // If scan bonus enabled, add 
+        if (Configurator.mobileScanBonusRadius != 0) {
+            Integer bonusObject = AntennaPlayerListener.playerScanBonus.get(player);
+            if (bonusObject != null) {
+                receptionRadius += bonusObject.intValue();
+            }
+        }
 
         if (world.hasStorm()) {
             receptionRadius = (int)((double)receptionRadius * Configurator.mobileRadiusStormFactor);
@@ -744,6 +754,9 @@ class AntennaPlayerListener implements Listener {
     // Compass targets index selection
     static ConcurrentHashMap<Player, Integer> playerTargets = new ConcurrentHashMap<Player, Integer>();
 
+    // How many scan iterations the player has faithfully held onto their compass for
+    static ConcurrentHashMap<Player, Integer> playerScanBonus = new ConcurrentHashMap<Player, Integer>();
+
     public AntennaPlayerListener(RadioBeacon pl) {
         plugin = pl;
 
@@ -810,7 +823,7 @@ class AntennaPlayerListener implements Listener {
                 targetInt = targetInteger.intValue() + delta;
                 playerTargets.put(player, targetInt);
             }
-            int receptionRadius = Antenna.getCompassRadius(item, player.getWorld());
+            int receptionRadius = Antenna.getCompassRadius(item, player);
             player.sendMessage("Tuned radio" + (receptionRadius == 0 ? "" : " (range " + receptionRadius + " m)"));
 
         }
@@ -823,6 +836,11 @@ class AntennaPlayerListener implements Listener {
 
         if (item != null && item.getType() == Material.COMPASS) {
             Antenna.receiveSignalsAtPlayer(player);
+        } else {    
+            // if scan increase is enabled, changing items resets scan bonus
+            if (Configurator.mobileScanBonusRadius != 0) { 
+                playerScanBonus.put(player, 0);
+            }
         }
     } 
 }
@@ -843,6 +861,18 @@ class ReceptionTask implements Runnable {
             ItemStack item = player.getItemInHand();
 
             if (item != null && item.getType() == Material.COMPASS) {
+                // if scan increase is enabled, increment scan # each scan 
+                if (Configurator.mobileScanBonusRadius != 0) {   
+                    Integer scanBonusObject = AntennaPlayerListener.playerScanBonus.get(player);
+                    int scanBonus = scanBonusObject == null ? 0 : scanBonusObject.intValue();
+
+                    int newScanBonus = scanBonus + Configurator.mobileScanBonusRadius;
+                    newScanBonus = Math.min(newScanBonus, Configurator.mobileScanBonusMaxRadius);
+
+                    AntennaPlayerListener.playerScanBonus.put(player, newScanBonus);
+                }
+
+
                 // Compass = mobile radio
                 Antenna.receiveSignalsAtPlayer(player);
             }
@@ -889,6 +919,8 @@ class Configurator {
     static boolean mobileRightClickTuneDown;
     static boolean mobileLeftClickTuneUp;
     static boolean mobileShiftTune;
+    static int mobileScanBonusRadius;
+    static int mobileScanBonusMaxRadius;
 
 
     static public boolean load(Plugin plugin) {
@@ -968,6 +1000,8 @@ class Configurator {
         mobileRightClickTuneDown = plugin.getConfig().getBoolean("mobileRightClickTuneDown", true);
         mobileLeftClickTuneUp = plugin.getConfig().getBoolean("mobileLeftClickTuneUp", true);
         mobileShiftTune = plugin.getConfig().getBoolean("mobileShiftTune", false);
+        mobileScanBonusRadius = plugin.getConfig().getInt("mobileScanBonusRadius", 0);
+        mobileScanBonusMaxRadius = plugin.getConfig().getInt("mobileScanBonusMaxRadius", 0);
         
         loadAntennas(plugin);
 

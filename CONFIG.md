@@ -102,6 +102,14 @@ just like fixedRadiusStormFactor but for compasses.
 
 **mobileRadiusThunderFactor**: Same as fixedRadiusThunderFactor but for compasses.
 
+**mobileScanBonusRadius**: If non-zero, increase reception radius by this amount each time the
+player is holding the compass during the scan period. If the player switches items, the increase
+is reset. This is meant to provide a "bonus" for players holding onto their compasses for
+longer periods of time.
+
+**mobileScanBonusMaxRadius**: The maximum scan bonus range. After it reaches this amount,
+the range will not increase further no matter how long the player holds onto their compass.
+
 **mobileTaskStartDelaySeconds**: Delay after the server starts up before beginning the mobile radio
 scanning task.
 
@@ -118,3 +126,5 @@ to exclusively react to the clicks. The tuning automatically wraps around as nee
 is required. At least one should be enabled.
 
 **mobileShiftTune**: Whether to require shift-clicking (sneaking) to tune the compass. 
+
+

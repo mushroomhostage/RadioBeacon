@@ -1,5 +1,6 @@
 X   1.0
-    * Add configuration options to enable/disable mobile radio tuning by shift/left/right-click
+    * Add options to enable/disable mobile radio tuning by shift/left/right-click
+    * Add options to increase mobile radio range when compass is held continuously (scan bonus)
 
 2012-02-06  0.10
     * Add mobileMaxRadius configuration option to cap compass radio reception
