@@ -57,11 +57,6 @@ import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.*;
 
-class Log {
-    static Logger log = Logger.getLogger("Minecraft");
-}
-
-
 // 2D integral location (unlike Bukkit's location)
 class AntennaXZ implements Comparable {
     World world;
@@ -118,8 +113,6 @@ class AntennaXZ implements Comparable {
 
 
 class Antenna {
-    static Logger log = Logger.getLogger("Minecraft");
-
     // TODO: map by world first
     static public ConcurrentHashMap<AntennaXZ, Antenna> xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();
 
@@ -136,7 +129,7 @@ class Antenna {
 
         xz2Ant.put(xz, this);
 
-        log.info("New antenna " + this);
+        RadioBeacon.log("New antenna " + this);
 
         Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(this, AntennaChangeEvent.Action.CREATE));
     }
@@ -172,7 +165,7 @@ class Antenna {
 
         xz2Ant.put(xz, this);
 
-        log.info("Loaded antenna " + this);
+        RadioBeacon.log("Loaded antenna " + this);
     }
 
     // Dump to serialized format (to disk)
@@ -227,7 +220,7 @@ class Antenna {
             throw new RuntimeException("No antenna at "+ant.xz+" to destroy!");
         }
 
-        log.info("Destroyed antenna " + ant);
+        RadioBeacon.log("Destroyed antenna " + ant);
         Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(ant, AntennaChangeEvent.Action.DESTROY));
     }
 
@@ -244,7 +237,7 @@ class Antenna {
 
     // Extend or shrink size of the antenna, updating the new center location
     public void setTipY(int newTipY) {
-        log.info("Move tip from "+tipY+" to + " +newTipY);
+        RadioBeacon.log("Move tip from "+tipY+" to + " +newTipY);
         tipY = newTipY;
 
         Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(this, AntennaChangeEvent.Action.TIP_MOVE));
@@ -434,7 +427,7 @@ class Antenna {
             Antenna otherAnt = pair.getValue();
 
             if (otherAnt.withinReceiveRange(receptionLoc, receptionRadius)) {
-                //log.info("Received transmission from " + otherAnt);
+                //RadioBeacon.log("Received transmission from " + otherAnt);
 
                 nearbyAnts.add(otherAnt);
 
@@ -461,7 +454,7 @@ class Antenna {
 
             String message = antLoc.getMessage();
             player.sendMessage("Locked onto signal at " + antLoc.getDistance(player.getLocation()) + " m" + (message == null ? "" : ": " + message));
-            //log.info("Targetting " + targetLoc);
+            //RadioBeacon.log("Targetting " + targetLoc);
         }
     }
 
@@ -491,7 +484,7 @@ class Antenna {
         // Base
         Location base = new Location(world, x, baseY, z);
         if (base.getBlock() == null || base.getBlock().getType() != Configurator.fixedBaseMaterial) {
-            log.info("checkIntact: antenna is missing base!");
+            RadioBeacon.log("checkIntact: antenna is missing base!");
             destroy(this);
             return false;
         }
@@ -501,7 +494,7 @@ class Antenna {
             Location piece = new Location(world, x, y, z);
 
             if (piece.getBlock() == null || piece.getBlock().getType() != Configurator.fixedAntennaMaterial) {
-                log.info("checkIntact: antenna is shorter than expected!");
+                RadioBeacon.log("checkIntact: antenna is shorter than expected!");
                 setTipY(y);
                 return false;
             }
@@ -542,7 +535,7 @@ class AntennaExplosionReactionTask implements Runnable {
             Antenna ant = Antenna.getAntenna(xz);
 
             if (ant != null) {
-                plugin.log.info("Explosion affected "+ant);
+                RadioBeacon.log("Explosion affected "+ant);
 
                 ant.checkIntact();
             }
@@ -550,7 +543,6 @@ class AntennaExplosionReactionTask implements Runnable {
     }
 }
 class AntennaBlockListener implements Listener {
-    Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
 
     public AntennaBlockListener(RadioBeacon plugin) {
@@ -709,12 +701,12 @@ class AntennaBlockListener implements Listener {
 
         if (event.getOldCurrent() == 0) {
             // TODO: find antenna at location and disable
-            log.info("current turned off at "+event.getBlock());
+            RadioBeacon.log("current turned off at "+event.getBlock());
 
             for (Antenna ant: plugin.ants) {
                 // TODO: efficiency
                 Block block = world.getBlockAt(ant.location);
-                log.info("ant block:"+block);
+                RadioBeacon.log("ant block:"+block);
             }
         }
     }
@@ -733,7 +725,7 @@ class AntennaBlockListener implements Listener {
             if (ant != null) {
                 affected.add(ant.xz);
 
-                log.info("Explosion affected "+ant);
+                RadioBeacon.log("Explosion affected "+ant);
                 ant.checkIntact();
             }
         }
@@ -746,7 +738,6 @@ class AntennaBlockListener implements Listener {
 
 
 class AntennaPlayerListener implements Listener {
-    Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
 
     // Compass targets index selection
@@ -846,12 +837,11 @@ class AntennaPlayerListener implements Listener {
 
 // Periodically check for nearby signals to receive at mobile compass radios
 class ReceptionTask implements Runnable {
-    Logger log = Logger.getLogger("Minecraft");
-    Plugin plugin;
+    RadioBeacon plugin;
     int taskId;
 
-    public ReceptionTask(Plugin p) {
-        plugin = p;
+    public ReceptionTask(RadioBeacon plugin) {
+        this.plugin = plugin;
     }
 
     public void run() {
@@ -881,8 +871,6 @@ class ReceptionTask implements Runnable {
 }
 
 class Configurator {
-    static Logger log = Logger.getLogger("Minecraft");
-
     // Configuration options
     static int fixedInitialRadius;
     static int fixedRadiusIncreasePerBlock;
@@ -923,7 +911,7 @@ class Configurator {
     static boolean verbose;
 
 
-    static public boolean load(Plugin plugin) {
+    static public boolean load(RadioBeacon plugin) {
         plugin.getConfig().options().copyDefaults(true);
         plugin.saveConfig();
         plugin.reloadConfig();      // needed for in-file defaults to take effect
@@ -957,14 +945,14 @@ class Configurator {
 
         fixedBaseMaterial = Material.matchMaterial(plugin.getConfig().getString("fixedBaseMaterial"));
         if (fixedBaseMaterial == null) {
-            log.severe("Failed to match fixedBaseMaterial");
+            RadioBeacon.logger.severe("Failed to match fixedBaseMaterial");
             Bukkit.getServer().getPluginManager().disablePlugin(plugin);
             return false;
         }
 
         fixedAntennaMaterial = Material.matchMaterial(plugin.getConfig().getString("fixedAntennaMaterial"));
         if (fixedAntennaMaterial == null) {
-            log.severe("Failed to match fixedAntennaMaterial");
+            RadioBeacon.logger.severe("Failed to match fixedAntennaMaterial");
             Bukkit.getServer().getPluginManager().disablePlugin(plugin);
             return false;
         }
@@ -975,7 +963,7 @@ class Configurator {
         } else if (f.equals("base")) {
             fixedRadiateFromTip = false;
         } else {
-            log.severe("fixedRadiateFrom not 'tip' nor 'base'");
+            RadioBeacon.logger.severe("fixedRadiateFrom not 'tip' nor 'base'");
             Bukkit.getServer().getPluginManager().disablePlugin(plugin);
             return false;
         }          
@@ -1016,7 +1004,7 @@ class Configurator {
     }
 
     // Load saved antenna information
-    static public void loadAntennas(Plugin plugin) {
+    static public void loadAntennas(RadioBeacon plugin) {
         YamlConfiguration antennaConfig = getAntennaConfig(plugin);
 
         List<Map<String,Object>> all;
@@ -1024,7 +1012,7 @@ class Configurator {
         Antenna.xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();   // clear existing
 
         if (antennaConfig == null || !antennaConfig.isSet("antennas")) {
-            log.info("No antennas loaded");
+            RadioBeacon.log("No antennas loaded");
             return;
         }
 
@@ -1036,12 +1024,12 @@ class Configurator {
             i += 1;
         }
 
-        log.info("Loaded " + i + " antennas");
+        RadioBeacon.log("Loaded " + i + " antennas");
     }
 
     static int lastCount = 0;
     // Save existing antennas
-    static public void saveAntennas(Plugin plugin) {
+    static public void saveAntennas(RadioBeacon plugin) {
         ArrayList<HashMap<String,Object>> all = new ArrayList<HashMap<String,Object>>();
         YamlConfiguration antennaConfig = getAntennaConfig(plugin);
 
@@ -1059,22 +1047,21 @@ class Configurator {
         try {
             antennaConfig.save(plugin.getDataFolder() + System.getProperty("file.separator") + "antennas.yml");
         } catch (IOException e) {
-            log.severe("Failed to save antennas.yml");
+            RadioBeacon.logger.severe("Failed to save antennas.yml");
         }
 
         if (count != lastCount) {
-            log.info("Saved " + count + " antennas");
+            RadioBeacon.log("Saved " + count + " antennas");
             lastCount = count;
         }
     }
 }
 
 class AntennaWeatherListener implements Listener {
-    Logger log = Logger.getLogger("Minecraft");
-    Plugin plugin;
+    RadioBeacon plugin;
 
-    public AntennaWeatherListener(Plugin pl) {
-        plugin = pl;
+    public AntennaWeatherListener(RadioBeacon plugin) {
+        this.plugin = plugin;
             
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
@@ -1091,7 +1078,7 @@ class AntennaWeatherListener implements Listener {
             Location baseLoc = directAnt.getBaseLocation();
 
             // Direct hit!
-            log.info("directly hit "+directAnt+", exploding with power "+power);
+            RadioBeacon.log("directly hit "+directAnt+", exploding with power "+power);
 
 
             if (power > 0) {
@@ -1128,7 +1115,7 @@ class AntennaWeatherListener implements Listener {
             // Within strike range?
             double distance = ant.get2dDistance(strikeLocation);
             if (distance < ant.getLightningAttractRadius()) {
-                log.info("strike near antenna "+ant+", within "+distance+" of "+strikeLocation);
+                RadioBeacon.log("strike near antenna "+ant+", within "+distance+" of "+strikeLocation);
 
                 if (Configurator.fixedLightningStrikeOne) {
                     // Only strike the tallest antenna
@@ -1152,7 +1139,7 @@ class AntennaWeatherListener implements Listener {
 
     // Strike an antenna with lightning
     private void strikeAntenna(Antenna victimAnt) {
-        log.info("striking "+victimAnt);
+        RadioBeacon.log("striking "+victimAnt);
 
         World world = victimAnt.xz.world;
 
@@ -1166,11 +1153,10 @@ class AntennaWeatherListener implements Listener {
 
 /* example of listening to custom event
 class AntennaNetworkListener implements Listener {
-    Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
 
-    public AntennaNetworkListener(RadioBeacon pl) {
-        plugin = pl;
+    public AntennaNetworkListener(RadioBeacon plugin) {
+        this.plugin = plugin;
 
         Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -1178,20 +1164,18 @@ class AntennaNetworkListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onAntennaChange(AntennaChangeEvent event) {
-        log.info("Cool it worked! "+event);
+        RadioBeacon.log("Cool it worked! "+event);
     }
 }*/
 
 public class RadioBeacon extends JavaPlugin {
-    Logger log = Logger.getLogger("Minecraft");
+    static Logger logger = Logger.getLogger("Minecraft");
     Listener blockListener;
     Listener playerListener;
     Listener weatherListener;
     ReceptionTask receptionTask;
 
     public void onEnable() {
-        log.info(getDescription().getFullName() + " loading");
-
         if (!Configurator.load(this)) {
             return;
         }
@@ -1216,7 +1200,7 @@ public class RadioBeacon extends JavaPlugin {
             Configurator.mobileTaskPeriodSeconds);
 
         if (taskId == -1) {
-            log.severe("Failed to schedule radio signal reception task");
+            logger.severe("Failed to schedule radio signal reception task");
             Bukkit.getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -1224,8 +1208,6 @@ public class RadioBeacon extends JavaPlugin {
     }
 
     public void onDisable() {
-        log.info(getDescription().getFullName() + " shutting down");
-
         Configurator.saveAntennas(this);
     }
 
@@ -1261,6 +1243,12 @@ public class RadioBeacon extends JavaPlugin {
         }
 
         return true;
+    }
+
+    public static void log(String message) {
+        if (Configurator.verbose) {
+            logger.info(message);
+        }
     }
 
     // Show either all antennas information, if have permission, or count only if not
