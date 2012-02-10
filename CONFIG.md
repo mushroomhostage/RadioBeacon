@@ -115,7 +115,6 @@ higher to reduce server load.
 and/or left-clicked compasses to tune the radio up.
 You can disable either one if you want other plugins (such as [Cakes Miner Apocalypse](http://dev.bukkit.org/server-mods/cakes-miner-apocalypse/))
 to exclusively react to the clicks. The tuning automatically wraps around as needed, so only up or down
-is required.
+is required. At least one should be enabled.
 
-
-
+**mobileShiftTune**: Whether to require shift-clicking (sneaking) to tune the compass. 

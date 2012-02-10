@@ -39,4 +39,5 @@ mobileTaskPeriodSeconds: 15
 mobileTaskSync: true            # whether to run in thread-safe task on the main thread
 mobileRightClickTuneDown: true
 mobileLeftClickTuneUp: true
+mobileShiftTune: false
 

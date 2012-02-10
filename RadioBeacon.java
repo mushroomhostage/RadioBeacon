@@ -777,6 +777,13 @@ class AntennaPlayerListener implements Listener {
             // TODO: also activate if click the _sign_ adjacent to the base
             // TODO: and if click anywhere within antenna? maybe not unless holding compass
         } else if (item != null && item.getType() == Material.COMPASS) {
+            if (Configurator.mobileShiftTune) {
+                // hold Shift + click to tune
+                if (!player.isSneaking()) { 
+                    return;
+                }
+            }
+
             // Increment target index
             Integer targetInteger = playerTargets.get(player);
             int targetInt;
@@ -881,6 +888,7 @@ class Configurator {
     static boolean mobileTaskSync;
     static boolean mobileRightClickTuneDown;
     static boolean mobileLeftClickTuneUp;
+    static boolean mobileShiftTune;
 
 
     static public boolean load(Plugin plugin) {
@@ -959,6 +967,7 @@ class Configurator {
         mobileTaskSync = plugin.getConfig().getBoolean("mobileTaskSync", true);
         mobileRightClickTuneDown = plugin.getConfig().getBoolean("mobileRightClickTuneDown", true);
         mobileLeftClickTuneUp = plugin.getConfig().getBoolean("mobileLeftClickTuneUp", true);
+        mobileShiftTune = plugin.getConfig().getBoolean("mobileShiftTune", false);
         
         loadAntennas(plugin);
 
