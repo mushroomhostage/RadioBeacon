@@ -257,7 +257,7 @@ class Antenna {
         // But we have to check, so antennas with gaps can be 'repaired' to extend their
         // range to their full tip
         int newTipY = placedY;
-        while(world.getBlockTypeIdAt(x, newTipY, z) == Configurator.fixedAntennaMaterial.getId()) {
+        while(world.getBlockTypeIdAt(x, newTipY, z) == AntennaConf.fixedAntennaMaterial.getId()) {
             newTipY += 1;
         }
 
@@ -269,7 +269,7 @@ class Antenna {
     }
 
     public Location getSourceLocation() {
-        return Configurator.fixedRadiateFromTip ? getTipLocation() : getBaseLocation();
+        return AntennaConf.fixedRadiateFromTip ? getTipLocation() : getBaseLocation();
     }
     
     public Location getBaseLocation() {
@@ -283,19 +283,19 @@ class Antenna {
     // Get radius of broadcasts for fixed antenna
     public int getBroadcastRadius() {
         int height = getHeight();
-        if (Configurator.fixedMaxHeight != 0 && height > Configurator.fixedMaxHeight) {
+        if (AntennaConf.fixedMaxHeight != 0 && height > AntennaConf.fixedMaxHeight) {
             // Above max will not extend range
-            height = Configurator.fixedMaxHeight;
+            height = AntennaConf.fixedMaxHeight;
         } 
 
         // TODO: exponential not multiplicative?
-        int radius = Configurator.fixedInitialRadius + height * Configurator.fixedRadiusIncreasePerBlock;
+        int radius = AntennaConf.fixedInitialRadius + height * AntennaConf.fixedRadiusIncreasePerBlock;
 
         if (xz.world.hasStorm()) {
-            radius = (int)((double)radius * Configurator.fixedRadiusStormFactor);
+            radius = (int)((double)radius * AntennaConf.fixedRadiusStormFactor);
         }
         if (xz.world.isThundering()) {
-            radius = (int)((double)radius * Configurator.fixedRadiusThunderFactor);
+            radius = (int)((double)radius * AntennaConf.fixedRadiusThunderFactor);
         }
 
         return radius;
@@ -304,28 +304,28 @@ class Antenna {
     // Get radius of reception for fixed antenna
     // This is normally same as broadcast, but can be changed
     public int getReceptionRadius() {
-        if (Configurator.fixedReceptionRadiusDivisor == 0) {
+        if (AntennaConf.fixedReceptionRadiusDivisor == 0) {
             // special meaning no reception radius (must directly overlap)
             return 0;
         }
 
-        int receptionRadius = getBroadcastRadius() / Configurator.fixedReceptionRadiusDivisor;
+        int receptionRadius = getBroadcastRadius() / AntennaConf.fixedReceptionRadiusDivisor;
 
         return receptionRadius;
     }
 
     // 2D radius within lightning strike will strike base
     public int getLightningAttractRadius() {
-        int attractRadius = (int)(Configurator.fixedLightningAttractRadiusInitial + getHeight() * Configurator.fixedLightningAttractRadiusIncreasePerBlock);
+        int attractRadius = (int)(AntennaConf.fixedLightningAttractRadiusInitial + getHeight() * AntennaConf.fixedLightningAttractRadiusIncreasePerBlock);
 
-        return Math.min(attractRadius, Configurator.fixedLightningAttractRadiusMax);
+        return Math.min(attractRadius, AntennaConf.fixedLightningAttractRadiusMax);
     }
 
     // Explosive power on direct lightning strike
     public float getBlastPower() {
-        float power = (float)(Configurator.fixedBlastPowerInitial + getHeight() * Configurator.fixedBlastPowerIncreasePerBlock);
+        float power = (float)(AntennaConf.fixedBlastPowerInitial + getHeight() * AntennaConf.fixedBlastPowerIncreasePerBlock);
 
-        return Math.min(power, (float)Configurator.fixedBlastPowerMax);
+        return Math.min(power, (float)AntennaConf.fixedBlastPowerMax);
     }
 
     public boolean withinReceiveRange(Location receptionLoc, int receptionRadius) {
@@ -393,10 +393,10 @@ class Antenna {
 
         // Bigger stack of compasses = better reception!
         int n = item.getAmount() - 1;
-        int receptionRadius = Configurator.mobileInitialRadius + n * Configurator.mobileIncreaseRadius;
+        int receptionRadius = AntennaConf.mobileInitialRadius + n * AntennaConf.mobileIncreaseRadius;
 
         // If scan bonus enabled, add 
-        if (Configurator.mobileScanBonusRadius != 0) {
+        if (AntennaConf.mobileScanBonusRadius != 0) {
             Integer bonusObject = AntennaPlayerListener.playerScanBonus.get(player);
             if (bonusObject != null) {
                 receptionRadius += bonusObject.intValue();
@@ -404,14 +404,14 @@ class Antenna {
         }
 
         if (world.hasStorm()) {
-            receptionRadius = (int)((double)receptionRadius * Configurator.mobileRadiusStormFactor);
+            receptionRadius = (int)((double)receptionRadius * AntennaConf.mobileRadiusStormFactor);
         }
         if (world.isThundering()) {
-            receptionRadius = (int)((double)receptionRadius * Configurator.mobileRadiusThunderFactor);
+            receptionRadius = (int)((double)receptionRadius * AntennaConf.mobileRadiusThunderFactor);
         }
 
 
-        receptionRadius = Math.min(receptionRadius, Configurator.mobileMaxRadius);
+        receptionRadius = Math.min(receptionRadius, AntennaConf.mobileMaxRadius);
 
         return receptionRadius;
     }
@@ -483,7 +483,7 @@ class Antenna {
 
         // Base
         Location base = new Location(world, x, baseY, z);
-        if (base.getBlock() == null || base.getBlock().getType() != Configurator.fixedBaseMaterial) {
+        if (base.getBlock() == null || base.getBlock().getType() != AntennaConf.fixedBaseMaterial) {
             RadioBeacon.log("checkIntact: antenna is missing base!");
             destroy(this);
             return false;
@@ -493,7 +493,7 @@ class Antenna {
         for (int y = baseY + 1; y < tipY; y += 1) {
             Location piece = new Location(world, x, y, z);
 
-            if (piece.getBlock() == null || piece.getBlock().getType() != Configurator.fixedAntennaMaterial) {
+            if (piece.getBlock() == null || piece.getBlock().getType() != AntennaConf.fixedAntennaMaterial) {
                 RadioBeacon.log("checkIntact: antenna is shorter than expected!");
                 setTipY(y);
                 return false;
@@ -557,29 +557,29 @@ class AntennaBlockListener implements Listener {
         Block block = event.getBlock();
         Player player = event.getPlayer();
 
-        if (block.getType() == Configurator.fixedBaseMaterial) {
+        if (block.getType() == AntennaConf.fixedBaseMaterial) {
             // Base material for antenna, if powered
             if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
-                if (block.getY() < Configurator.fixedBaseMinY) {
-                    player.sendMessage("Not creating antenna below depth of " + Configurator.fixedBaseMinY + " m");
+                if (block.getY() < AntennaConf.fixedBaseMinY) {
+                    player.sendMessage("Not creating antenna below depth of " + AntennaConf.fixedBaseMinY + " m");
                 } else {
                     Antenna ant = new Antenna(block.getLocation());
 
                     // Usually, will be placing a new antenna from scratch.. but if they are repairing
                     // look for the highest iron bars above it
                     Location above = block.getLocation().add(0, 1, 0);
-                    if (above.getBlock().getType() == Configurator.fixedAntennaMaterial) {
+                    if (above.getBlock().getType() == AntennaConf.fixedAntennaMaterial) {
                         ant.setTipYAtHighest(above.getBlockY());
                     }
 
                     player.sendMessage("New antenna created"); //, with range "+ant.getBroadcastRadius()+" m");
                 }
             } else {
-                if (Configurator.fixedUnpoweredNagMessage != null && !Configurator.fixedUnpoweredNagMessage.equals("")) {
-                    player.sendMessage(Configurator.fixedUnpoweredNagMessage);
+                if (AntennaConf.fixedUnpoweredNagMessage != null && !AntennaConf.fixedUnpoweredNagMessage.equals("")) {
+                    player.sendMessage(AntennaConf.fixedUnpoweredNagMessage);
                 }
             }
-        } else if (block.getType() == Configurator.fixedAntennaMaterial) {
+        } else if (block.getType() == AntennaConf.fixedAntennaMaterial) {
             Antenna ant = Antenna.getAntenna(block.getLocation());
             if (ant == null) {
                 // No antenna at this xz column to extend
@@ -610,7 +610,7 @@ class AntennaBlockListener implements Listener {
         Block block = event.getBlock();
         World world = block.getWorld();
 
-        if (block.getType() == Configurator.fixedBaseMaterial) {
+        if (block.getType() == AntennaConf.fixedBaseMaterial) {
             Antenna ant = Antenna.getAntenna(block.getLocation());
             
             if (ant == null) {
@@ -625,7 +625,7 @@ class AntennaBlockListener implements Listener {
 
             ant.destroy(ant);
             event.getPlayer().sendMessage("Destroyed antenna");
-        } else if (block.getType() == Configurator.fixedAntennaMaterial) {
+        } else if (block.getType() == AntennaConf.fixedAntennaMaterial) {
             Antenna ant = Antenna.getAntenna(block.getLocation());
 
             if (ant == null) {
@@ -652,8 +652,8 @@ class AntennaBlockListener implements Listener {
                 newTipY -= 1;
 
                 pieceType = world.getBlockTypeIdAt(x, newTipY, z);
-            } while(pieceType != Configurator.fixedBaseMaterial.getId() &&
-                    pieceType != Configurator.fixedAntennaMaterial.getId() &&
+            } while(pieceType != AntennaConf.fixedBaseMaterial.getId() &&
+                    pieceType != AntennaConf.fixedAntennaMaterial.getId() &&
                     newTipY > 0);
 
             ant.setTipY(newTipY);
@@ -731,7 +731,7 @@ class AntennaBlockListener implements Listener {
         }
 
         if (affected.size() > 0) {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new AntennaExplosionReactionTask(plugin, affected), Configurator.fixedExplosionReactionDelay);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new AntennaExplosionReactionTask(plugin, affected), AntennaConf.fixedExplosionReactionDelay);
         }
     }
 }
@@ -758,7 +758,7 @@ class AntennaPlayerListener implements Listener {
         ItemStack item = event.getItem();
         Player player = event.getPlayer();
 
-        if (block != null && block.getType() == Configurator.fixedBaseMaterial) {
+        if (block != null && block.getType() == AntennaConf.fixedBaseMaterial) {
             Antenna ant = Antenna.getAntenna(block.getLocation());
             if (ant == null) {
                 return;
@@ -779,7 +779,7 @@ class AntennaPlayerListener implements Listener {
             // TODO: also activate if click the _sign_ adjacent to the base
             // TODO: and if click anywhere within antenna? maybe not unless holding compass
         } else if (item != null && item.getType() == Material.COMPASS) {
-            if (Configurator.mobileShiftTune) {
+            if (AntennaConf.mobileShiftTune) {
                 // hold Shift + click to tune
                 if (!player.isSneaking()) { 
                     return;
@@ -797,12 +797,12 @@ class AntennaPlayerListener implements Listener {
                 int delta;
                 if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) {
                     delta = -1;
-                    if (!Configurator.mobileRightClickTuneDown) {
+                    if (!AntennaConf.mobileRightClickTuneDown) {
                         return;
                     }
                 } else {
                     delta = 1;
-                    if (!Configurator.mobileLeftClickTuneUp) {
+                    if (!AntennaConf.mobileLeftClickTuneUp) {
                         return;
                     }
 
@@ -827,7 +827,7 @@ class AntennaPlayerListener implements Listener {
             Antenna.receiveSignalsAtPlayer(player);
         } else {    
             // if scan increase is enabled, changing items resets scan bonus
-            if (Configurator.mobileScanBonusRadius != 0) { 
+            if (AntennaConf.mobileScanBonusRadius != 0) { 
                 playerScanBonus.put(player, 0);
             }
         }
@@ -850,12 +850,12 @@ class ReceptionTask implements Runnable {
 
             if (item != null && item.getType() == Material.COMPASS) {
                 // if scan increase is enabled, increment scan # each scan 
-                if (Configurator.mobileScanBonusRadius != 0) {   
+                if (AntennaConf.mobileScanBonusRadius != 0) {   
                     Integer scanBonusObject = AntennaPlayerListener.playerScanBonus.get(player);
                     int scanBonus = scanBonusObject == null ? 0 : scanBonusObject.intValue();
 
-                    int newScanBonus = scanBonus + Configurator.mobileScanBonusRadius;
-                    newScanBonus = Math.min(newScanBonus, Configurator.mobileScanBonusMaxRadius);
+                    int newScanBonus = scanBonus + AntennaConf.mobileScanBonusRadius;
+                    newScanBonus = Math.min(newScanBonus, AntennaConf.mobileScanBonusMaxRadius);
 
                     AntennaPlayerListener.playerScanBonus.put(player, newScanBonus);
                 }
@@ -866,11 +866,11 @@ class ReceptionTask implements Runnable {
             }
         }
 
-        Configurator.saveAntennas(plugin); 
+        AntennaConf.saveAntennas(plugin); 
     }
 }
 
-class Configurator {
+class AntennaConf {
     // Configuration options
     static int fixedInitialRadius;
     static int fixedRadiusIncreasePerBlock;
@@ -1082,12 +1082,12 @@ class AntennaWeatherListener implements Listener {
 
 
             if (power > 0) {
-                world.createExplosion(baseLoc, power, Configurator.fixedBlastSetFire);
+                world.createExplosion(baseLoc, power, AntennaConf.fixedBlastSetFire);
             }
 
             // Ensure antenna is destroyed
             Block baseBlock = world.getBlockAt(baseLoc);
-            if (baseBlock.getType() == Configurator.fixedBaseMaterial) {
+            if (baseBlock.getType() == AntennaConf.fixedBaseMaterial) {
                 baseBlock.setType(Material.AIR);
 
                 // TODO: log destroyed by lightning
@@ -1117,7 +1117,7 @@ class AntennaWeatherListener implements Listener {
             if (distance < ant.getLightningAttractRadius()) {
                 RadioBeacon.log("strike near antenna "+ant+", within "+distance+" of "+strikeLocation);
 
-                if (Configurator.fixedLightningStrikeOne) {
+                if (AntennaConf.fixedLightningStrikeOne) {
                     // Only strike the tallest antenna
                     // This allows larger antennas to be built as "lightning rods", attracting
                     // lightning away from other, smaller antennas nearby
@@ -1143,7 +1143,7 @@ class AntennaWeatherListener implements Listener {
 
         World world = victimAnt.xz.world;
 
-        if (Configurator.fixedLightningDamage) {
+        if (AntennaConf.fixedLightningDamage) {
             world.strikeLightning(victimAnt.getBaseLocation());
         } else {
             world.strikeLightningEffect(victimAnt.getBaseLocation());
@@ -1176,7 +1176,7 @@ public class RadioBeacon extends JavaPlugin {
     ReceptionTask receptionTask;
 
     public void onEnable() {
-        if (!Configurator.load(this)) {
+        if (!AntennaConf.load(this)) {
             return;
         }
 
@@ -1185,7 +1185,7 @@ public class RadioBeacon extends JavaPlugin {
         playerListener = new AntennaPlayerListener(this);
         //Listener networkListener = new AntennaNetworkListener(this);
 
-        if (Configurator.fixedWeatherListener) {
+        if (AntennaConf.fixedWeatherListener) {
             weatherListener = new AntennaWeatherListener(this);
         } else {
             weatherListener = null;
@@ -1196,8 +1196,8 @@ public class RadioBeacon extends JavaPlugin {
         // Compass notification task
         int taskId;
         taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, receptionTask, 
-            Configurator.mobileTaskStartDelaySeconds,
-            Configurator.mobileTaskPeriodSeconds);
+            AntennaConf.mobileTaskStartDelaySeconds,
+            AntennaConf.mobileTaskPeriodSeconds);
 
         if (taskId == -1) {
             logger.severe("Failed to schedule radio signal reception task");
@@ -1208,7 +1208,7 @@ public class RadioBeacon extends JavaPlugin {
     }
 
     public void onDisable() {
-        Configurator.saveAntennas(this);
+        AntennaConf.saveAntennas(this);
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
@@ -1221,13 +1221,13 @@ public class RadioBeacon extends JavaPlugin {
                 listAntennas(sender);
             } else if (args[0].equals("save")) {
                 if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
-                    Configurator.saveAntennas(this);
+                    AntennaConf.saveAntennas(this);
                 } else {
                     sender.sendMessage("You do not have permission to save antennas");
                 }
             } else if (args[0].equals("load")) {
                 if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
-                    Configurator.loadAntennas(this);
+                    AntennaConf.loadAntennas(this);
                 } else {
                     sender.sendMessage("You do not have permission to load antennas");
                 }
@@ -1246,7 +1246,7 @@ public class RadioBeacon extends JavaPlugin {
     }
 
     public static void log(String message) {
-        if (Configurator.verbose) {
+        if (AntennaConf.verbose) {
             logger.info(message);
         }
     }
