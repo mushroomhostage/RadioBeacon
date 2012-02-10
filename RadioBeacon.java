@@ -928,7 +928,6 @@ class Configurator {
     static double mobileRadiusThunderFactor;
     static int mobileTaskStartDelaySeconds;
     static int mobileTaskPeriodSeconds;
-    static boolean mobileTaskSync;
     static boolean mobileRightClickTuneDown;
     static boolean mobileLeftClickTuneUp;
     static boolean mobileShiftTune;
@@ -937,12 +936,9 @@ class Configurator {
 
 
     static public boolean load(Plugin plugin) {
-        if (plugin.getConfig().getInt("version", -1) < 0) {
-            log.info("Initializing defaults");
-            // Not present, initialize
-            createNew(plugin);
-        }
-
+        plugin.getConfig().options().copyDefaults(true);
+        plugin.saveConfig();
+        plugin.reloadConfig();      // needed for in-file defaults to take effect
 
         fixedInitialRadius = plugin.getConfig().getInt("fixedInitialRadius", 100);
         fixedRadiusIncreasePerBlock = plugin.getConfig().getInt("fixedRadiusIncreasePerBlock", 100);
@@ -1011,7 +1007,6 @@ class Configurator {
         mobileTaskStartDelaySeconds = plugin.getConfig().getInt("mobileTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
         mobileTaskPeriodSeconds = plugin.getConfig().getInt("mobileTaskPeriodSeconds", 20) * TICKS_PER_SECOND;
 
-        mobileTaskSync = plugin.getConfig().getBoolean("mobileTaskSync", true);
         mobileRightClickTuneDown = plugin.getConfig().getBoolean("mobileRightClickTuneDown", true);
         mobileLeftClickTuneUp = plugin.getConfig().getBoolean("mobileLeftClickTuneUp", true);
         mobileShiftTune = plugin.getConfig().getBoolean("mobileShiftTune", false);
@@ -1282,16 +1277,9 @@ public class RadioBeacon extends JavaPlugin {
 
         // Compass notification task
         int taskId;
-        if (Configurator.mobileTaskSync) {
-            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, receptionTask, 
-                Configurator.mobileTaskStartDelaySeconds,
-                Configurator.mobileTaskPeriodSeconds);
-        } else {
-            log.info("WARNING: Running mobile radio task asynchronously, not thread-safe! Set mobileTaskSync:true to fix.");
-            taskId = Bukkit.getScheduler().scheduleAsyncRepeatingTask(this, receptionTask, 
-                Configurator.mobileTaskStartDelaySeconds,
-                Configurator.mobileTaskPeriodSeconds);
-        }
+        taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, receptionTask, 
+            Configurator.mobileTaskStartDelaySeconds,
+            Configurator.mobileTaskPeriodSeconds);
 
         if (taskId == -1) {
             log.severe("Failed to schedule radio signal reception task");

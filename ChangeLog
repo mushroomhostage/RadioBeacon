@@ -2,6 +2,7 @@ X   1.0
     * Add options to enable/disable mobile radio tuning by shift/left/right-click
     * Add options to increase mobile radio range when compass is held continuously (scan bonus)
     * Add option for asymmetric broadcast/reception radius on fixed antennas
+    * Fix bug where copied config.yml defaults were ignored on initial run
 
 2012-02-06  0.10
     * Add mobileMaxRadius configuration option to cap compass radio reception

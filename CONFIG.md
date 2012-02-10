@@ -83,6 +83,7 @@ Note that very high values may cause excessive lag or damage and are not recomme
 **fixedBlastPowerIncreasePerBlock**: The blast power increase for each iron fence. Floating-point.
 
 **fixedBlastPowerMax**: The maximum blast power. Building higher will have no effect.
+For reference, 6.0 is a the same power as a charged creeper.
 
 **fixedBlastSetFire**: Whether blasts should set exploded blocks aflame or not. Recommended
 true since the explosion is electrical in nature.
