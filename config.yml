@@ -6,6 +6,7 @@ fixedRadiusIncreasePerBlock: 50
 fixedMaxHeightMeters: 0         # clamp antenna height
 fixedRadiusStormFactor: 0.7     # attenuate/amplify when has storm
 fixedRadiusThunderFactor: 1.1   # attenuate/amplify when is thundering
+fixedReceptionRadiusDivisor: 1
 fixedBaseMinY: 0                # must build base above this level
 #fixedBaseMinY: 64              # sea level
 fixedBaseMaterial: iron_block

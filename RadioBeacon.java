@@ -301,13 +301,13 @@ class Antenna {
         return tipY - baseY;
     }
 
+    // Get radius of broadcasts for fixed antenna
     public int getBroadcastRadius() {
         int height = getHeight();
         if (Configurator.fixedMaxHeight != 0 && height > Configurator.fixedMaxHeight) {
             // Above max will not extend range
             height = Configurator.fixedMaxHeight;
         } 
-
 
         // TODO: exponential not multiplicative?
         int radius = Configurator.fixedInitialRadius + height * Configurator.fixedRadiusIncreasePerBlock;
@@ -320,6 +320,19 @@ class Antenna {
         }
 
         return radius;
+    }
+
+    // Get radius of reception for fixed antenna
+    // This is normally same as broadcast, but can be changed
+    public int getReceptionRadius() {
+        if (Configurator.fixedReceptionRadiusDivisor == 0) {
+            // special meaning no reception radius (must directly overlap)
+            return 0;
+        }
+
+        int receptionRadius = getBroadcastRadius() / Configurator.fixedReceptionRadiusDivisor;
+
+        return receptionRadius;
     }
 
     // 2D radius within lightning strike will strike base
@@ -338,12 +351,11 @@ class Antenna {
 
     public boolean withinReceiveRange(Location receptionLoc, int receptionRadius) {
         if (!xz.world.equals(receptionLoc.getWorld())) {
-            // No cross-world communicatio... yet! TODO: how?
+            // No cross-world communication... yet! TODO: how?
             return false;
         }
        
         // Sphere intersection of broadcast range from source
-        // TODO: asymmetric send/receive radii?
         return getSourceLocation().distanceSquared(receptionLoc) < square(getBroadcastRadius() + receptionRadius);
     }
 
@@ -376,7 +388,7 @@ class Antenna {
     public void receiveSignals(Player player) {
         player.sendMessage("Antenna range: " + getBroadcastRadius() + " m"); //, lightning attraction: " + getLightningAttractRadius() + " m" + ", blast power: " + getBlastPower());
 
-        receiveSignals(player, getSourceLocation(), getBroadcastRadius(), false);
+        receiveSignals(player, getSourceLocation(), getReceptionRadius(), false);
     }
 
     // Receive signals from mobile radio held by player
@@ -901,6 +913,7 @@ class Configurator {
     static int fixedExplosionReactionDelay;
     static double fixedRadiusStormFactor;
     static double fixedRadiusThunderFactor;
+    static int fixedReceptionRadiusDivisor;
     static int fixedMaxHeight;
     static int fixedBaseMinY;
     static Material fixedBaseMaterial;
@@ -925,6 +938,7 @@ class Configurator {
 
     static public boolean load(Plugin plugin) {
         if (plugin.getConfig().getInt("version", -1) < 0) {
+            log.info("Initializing defaults");
             // Not present, initialize
             createNew(plugin);
         }
@@ -949,6 +963,7 @@ class Configurator {
 
         fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);
         fixedRadiusThunderFactor = plugin.getConfig().getDouble("fixedRadiusThunderFactor", 1.1);
+        fixedReceptionRadiusDivisor = plugin.getConfig().getInt("fixedReceptionRadiusDivisor", 1);
 
         fixedMaxHeight = plugin.getConfig().getInt("fixedMaxHeightMeters", 0);
 

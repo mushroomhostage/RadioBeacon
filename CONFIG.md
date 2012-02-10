@@ -19,6 +19,13 @@ to amplify, <1.0 to attenuate.
 
 **fixedRadiusThunderFactor**: Multiply radius when thundering.
 
+**fixedReceptionRadiusDivisor**: Divide broadcast radius by this value to obtain the
+reception radius. If 1, reception radius is equal to broadcast radius, if 0,
+reception radius is fixed to 0 (special case -- antenna must be directly within
+broadcast range of other antenna), other integer values greater than 1 will result
+in a lower reception radius (asymmetric broadcast/reception), e.g. 2 for a reception
+radius half of the broadcast radius.
+
 **fixedBaseMinY**: Require antennas to be built above this Y level. 0 for anywhere, 64 for
 sea level, etc
 
