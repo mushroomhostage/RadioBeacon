@@ -659,7 +659,6 @@ class AntennaBlockListener implements Listener {
             ant.setTipY(newTipY);
             event.getPlayer().sendMessage("Shrunk antenna range to " + ant.getBroadcastRadius() + " m");
 
-            // TODO: also check when destroyed by explosions or other means!
         } else if (block.getType() == Material.WALL_SIGN || block.getType() == Material.SIGN_POST) {
             Antenna ant = Antenna.getAntennaByAdjacent(block.getLocation());
             if (ant == null) {
@@ -776,7 +775,6 @@ class AntennaPlayerListener implements Listener {
                 }
             }
 
-            // TODO: also activate if click the _sign_ adjacent to the base
             // TODO: and if click anywhere within antenna? maybe not unless holding compass
         } else if (item != null && item.getType() == Material.COMPASS) {
             if (AntennaConf.mobileShiftTune) {
@@ -1090,7 +1088,7 @@ class AntennaWeatherListener implements Listener {
             if (baseBlock.getType() == AntennaConf.fixedBaseMaterial) {
                 baseBlock.setType(Material.AIR);
 
-                // TODO: log destroyed by lightning
+                // TODO: log that it was destroyed by lightning
                 Antenna.destroy(directAnt);
             }
             // TODO: move destruction check to explosion event? There's ENTITY_EXPODE,
