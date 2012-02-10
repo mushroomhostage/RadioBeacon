@@ -3,6 +3,7 @@
     * Add options to increase mobile radio range when compass is held continuously (scan bonus)
     * Add option for asymmetric broadcast/reception radius on fixed antennas
     * Fix bug where copied config.yml defaults were ignored on initial run
+    * Add AntennaChangeEvent custom event other plugins can listen to
 
 2012-02-06  0.10
     * Add mobileMaxRadius configuration option to cap compass radio reception

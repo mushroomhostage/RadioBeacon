@@ -1204,6 +1204,7 @@ class AntennaWeatherListener implements Listener {
     }
 }
 
+/* example of listening to custom event
 class AntennaNetworkListener implements Listener {
     Logger log = Logger.getLogger("Minecraft");
     RadioBeacon plugin;
@@ -1219,7 +1220,7 @@ class AntennaNetworkListener implements Listener {
     public void onAntennaChange(AntennaChangeEvent event) {
         log.info("Cool it worked! "+event);
     }
-}
+}*/
 
 public class RadioBeacon extends JavaPlugin {
     Logger log = Logger.getLogger("Minecraft");
@@ -1238,7 +1239,7 @@ public class RadioBeacon extends JavaPlugin {
 
         blockListener = new AntennaBlockListener(this);
         playerListener = new AntennaPlayerListener(this);
-        Listener networkListener = new AntennaNetworkListener(this);
+        //Listener networkListener = new AntennaNetworkListener(this);
 
         if (Configurator.fixedWeatherListener) {
             weatherListener = new AntennaWeatherListener(this);
