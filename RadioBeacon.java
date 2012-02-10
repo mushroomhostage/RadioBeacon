@@ -120,7 +120,7 @@ class AntennaXZ implements Comparable {
 class Antenna {
     static Logger log = Logger.getLogger("Minecraft");
 
-    // TODO: map by world first! Multi-world support
+    // TODO: map by world first
     static public ConcurrentHashMap<AntennaXZ, Antenna> xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();
 
     AntennaXZ xz;
@@ -223,9 +223,6 @@ class Antenna {
     }
 
     public static void destroy(Antenna ant) {
-        //destroyTip(ant);
-        //destroyBase(ant);
-
         if (xz2Ant.remove(ant.xz) == null) {
             throw new RuntimeException("No antenna at "+ant.xz+" to destroy!");
         }
@@ -233,19 +230,6 @@ class Antenna {
         log.info("Destroyed antenna " + ant);
         Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(ant));
     }
-
-    /*
-    public static void destroyTip(Antenna ant) {
-        if (tipsAt.remove(ant.tipAt) == null) {
-            throw new RuntimeException("No antenna tip found to destroy at " + ant.tipAt);
-        }
-    }
-
-    public static void destroyBase(Antenna ant) {
-        if (basesAt.remove(ant.baseAt) == null) {
-            throw new RuntimeException("No antenna base found to destroy at " + ant.baseAt);
-        }
-    }*/
 
     // Set or get textual message being broadcasted (may be null for none)
     public void setMessage(String m) {
@@ -1218,35 +1202,22 @@ class AntennaWeatherListener implements Listener {
     }
 }
 
-class AntennaChangeEvent extends Event {
-    private final Antenna antenna;
-
-    public AntennaChangeEvent(Antenna antenna) {
-        this.antenna = antenna;
-    }
-
-    public Antenna getAntenna() {
-        return antenna;
-    }
-
-    // http://wiki.bukkit.org/Introduction_to_the_New_Event_System#Creating_Custom_Events
-    private static final HandlerList handlers = new HandlerList();
-    public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-}
-
-/*
 class AntennaNetworkListener implements Listener {
+    Logger log = Logger.getLogger("Minecraft");
+    RadioBeacon plugin;
+
+    public AntennaNetworkListener(RadioBeacon pl) {
+        plugin = pl;
+
+        Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+
     @EventHandler(priority = EventPriority.NORMAL)
     public void onAntennaChange(AntennaChangeEvent event) {
-        plugin.log.info("Cool it worked! "+event);
+        log.info("Cool it worked! "+event);
     }
-}*/
+}
 
 public class RadioBeacon extends JavaPlugin {
     Logger log = Logger.getLogger("Minecraft");
@@ -1265,7 +1236,7 @@ public class RadioBeacon extends JavaPlugin {
 
         blockListener = new AntennaBlockListener(this);
         playerListener = new AntennaPlayerListener(this);
-        //networkListener = new AntennaNetworkListener(this);
+        Listener networkListener = new AntennaNetworkListener(this);
 
         if (Configurator.fixedWeatherListener) {
             weatherListener = new AntennaWeatherListener(this);
