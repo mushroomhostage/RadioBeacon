@@ -787,13 +787,19 @@ class AntennaPlayerListener implements Listener {
                 int delta;
                 if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) {
                     delta = -1;
+                    if (!Configurator.mobileRightClickTuneDown) {
+                        return;
+                    }
                 } else {
                     delta = 1;
+                    if (!Configurator.mobileLeftClickTuneUp) {
+                        return;
+                    }
+
                 }
                 // TODO: show direction in message?
 
                 targetInt = targetInteger.intValue() + delta;
-                // TODO: cycle back if right-click
                 playerTargets.put(player, targetInt);
             }
             int receptionRadius = Antenna.getCompassRadius(item, player.getWorld());
@@ -872,6 +878,8 @@ class Configurator {
     static int mobileTaskStartDelaySeconds;
     static int mobileTaskPeriodSeconds;
     static boolean mobileTaskSync;
+    static boolean mobileRightClickTuneDown;
+    static boolean mobileLeftClickTuneUp;
 
 
     static public boolean load(Plugin plugin) {
@@ -947,8 +955,9 @@ class Configurator {
         mobileTaskStartDelaySeconds = plugin.getConfig().getInt("mobileTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
         mobileTaskPeriodSeconds = plugin.getConfig().getInt("mobileTaskPeriodSeconds", 20) * TICKS_PER_SECOND;
 
-
         mobileTaskSync = plugin.getConfig().getBoolean("mobileTaskSync", true);
+        mobileRightClickTuneDown = plugin.getConfig().getBoolean("mobileRightClickTuneDown", true);
+        mobileLeftClickTuneUp = plugin.getConfig().getBoolean("mobileLeftClickTuneUp", true);
         
         loadAntennas(plugin);
 

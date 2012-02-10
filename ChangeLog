@@ -1,3 +1,6 @@
+X   1.0
+    * Add mobileRightClickTuneDown and mobileLeftClickTuneUp configuration options
+
 2012-02-06  0.10
     * Add mobileMaxRadius configuration option to cap compass radio reception
     * Add weather-affected compass options, mobileRadiusStormFactor and mobileRadiusThunderFactor 
