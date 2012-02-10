@@ -30,8 +30,8 @@ mobileIncreaseRadius: 10
 mobileMaxRadius: 10000
 mobileRadiusStormFactor: 1.0
 mobileRadiusThunderFactor: 1.0
-mobileScanBonusRadius: 1
-mobileScanBonusMaxRadius: 10
+mobileScanBonusRadius: 0
+mobileScanBonusMaxRadius: 0
 mobileTaskStartDelaySeconds: 0
 mobileTaskPeriodSeconds: 15
 mobileRightClickTuneDown: true
