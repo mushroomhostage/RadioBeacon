@@ -31,13 +31,29 @@ import org.bukkit.event.*;
 
 public class AntennaChangeEvent extends Event {
     private final Antenna antenna;
+    private final Action action;
 
-    public AntennaChangeEvent(Antenna antenna) {
+    public enum Action {
+        CREATE,
+        DESTROY,
+        TIP_MOVE
+    }
+
+    public AntennaChangeEvent(Antenna antenna, Action action) {
         this.antenna = antenna;
+        this.action = action;
     }
 
     public Antenna getAntenna() {
         return antenna;
+    }
+
+    public Action getAction() {
+        return action;
+    }
+
+    public String toString() {
+        return "AntennaChangeEvent action="+action+", antenna="+antenna;
     }
 
     // http://wiki.bukkit.org/Introduction_to_the_New_Event_System#Creating_Custom_Events

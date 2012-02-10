@@ -138,7 +138,7 @@ class Antenna {
 
         log.info("New antenna " + this);
 
-        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(this));
+        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(this, AntennaChangeEvent.Action.CREATE));
     }
 
     // Load from serialized format (from disk)
@@ -228,7 +228,7 @@ class Antenna {
         }
 
         log.info("Destroyed antenna " + ant);
-        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(ant));
+        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(ant, AntennaChangeEvent.Action.DESTROY));
     }
 
     // Set or get textual message being broadcasted (may be null for none)
@@ -245,7 +245,7 @@ class Antenna {
         log.info("Move tip from "+tipY+" to + " +newTipY);
         tipY = newTipY;
 
-        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(this));
+        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(this, AntennaChangeEvent.Action.TIP_MOVE));
     }
 
     // Set new tip at highest Y with iron fences, starting at given Y
