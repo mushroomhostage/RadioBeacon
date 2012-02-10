@@ -920,6 +920,8 @@ class Configurator {
     static int mobileScanBonusRadius;
     static int mobileScanBonusMaxRadius;
 
+    static boolean verbose;
+
 
     static public boolean load(Plugin plugin) {
         plugin.getConfig().options().copyDefaults(true);
@@ -998,6 +1000,8 @@ class Configurator {
         mobileShiftTune = plugin.getConfig().getBoolean("mobileShiftTune", false);
         mobileScanBonusRadius = plugin.getConfig().getInt("mobileScanBonusRadius", 0);
         mobileScanBonusMaxRadius = plugin.getConfig().getInt("mobileScanBonusMaxRadius", 0);
+
+        verbose = plugin.getConfig().getBoolean("verbose", true);
         
         loadAntennas(plugin);
 
@@ -1005,50 +1009,6 @@ class Configurator {
         return true;
     }
    
-    // Copy the default config.yml to user's config
-    // This is a direct file copy, unlike Bukkit plugin.getConfig().options().copyDefaults(true),
-    // so it preserves file comments
-    static public boolean createNew(Plugin plugin) {
-        String filename = plugin.getDataFolder() + System.getProperty("file.separator") + "config.yml";
-        File file = new File(filename);
- 
-        FileWriter fileWriter;
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdir();
-        }
-
-        try {
-            fileWriter = new FileWriter(file);
-        } catch (IOException e) {
-            log.severe("Couldn't write config file: " + e.getMessage());
-            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
-            return false;
-        }
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(plugin.getResource("config.yml"))));
-        BufferedWriter writer = new BufferedWriter(fileWriter);
-        try {
-            String line = reader.readLine();
-            while (line != null) {
-                writer.write(line + System.getProperty("line.separator"));
-                line = reader.readLine();
-            }
-            log.info("Wrote default config");
-        } catch (IOException e) {
-            log.severe("Error writing config: " + e.getMessage());
-            return false;
-        } finally {
-            try {
-                writer.close();
-                reader.close();
-            } catch (IOException e) {
-                log.severe("Error saving config: " + e.getMessage());
-                Bukkit.getServer().getPluginManager().disablePlugin(plugin);
-            }
-        }
-        return true;
-    }
-    
     static private YamlConfiguration getAntennaConfig(Plugin plugin) {
         String filename = plugin.getDataFolder() + System.getProperty("file.separator") + "antennas.yml";
         File file = new File(filename);

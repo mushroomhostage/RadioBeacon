@@ -38,3 +38,4 @@ mobileRightClickTuneDown: true
 mobileLeftClickTuneUp: true
 mobileShiftTune: false
 
+verbose: true
