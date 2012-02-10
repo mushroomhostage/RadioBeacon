@@ -75,7 +75,7 @@ block.
 
 ## Configuration
 RadioBeacon is highly configurable for a variety of applications. 
-For a full list of configuration options, see [config.yml](http://dev.bukkit.org/server-mods/radiobeacon/pages/configuration/).
+For a full list of configuration options, see [Configuration](http://dev.bukkit.org/server-mods/radiobeacon/pages/configuration/).
 
 ## Permissions and Commands
 RadioBeacon only adds one new command, /antennas. Players can use it to see the total number of
