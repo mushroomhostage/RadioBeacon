@@ -36,7 +36,8 @@ public class AntennaChangeEvent extends Event {
     public enum Action {
         CREATE,
         DESTROY,
-        TIP_MOVE
+        TIP_MOVE,
+        MESSAGE
     }
 
     public AntennaChangeEvent(Antenna antenna, Action action) {

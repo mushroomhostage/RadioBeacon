@@ -234,6 +234,8 @@ class Antenna {
     // Set or get textual message being broadcasted (may be null for none)
     public void setMessage(String m) {
         message = m;
+        
+        Bukkit.getServer().getPluginManager().callEvent(new AntennaChangeEvent(this, AntennaChangeEvent.Action.MESSAGE));
     }
 
     public String getMessage() {
@@ -672,7 +674,7 @@ class AntennaBlockListener implements Listener {
                 return;
             }
             event.getPlayer().sendMessage("Cleared antenna message");
-            ant.message = null;
+            ant.setMessage(null);
         }
     }
 
@@ -684,7 +686,7 @@ class AntennaBlockListener implements Listener {
 
         Antenna ant = Antenna.getAntennaByAdjacent(block.getLocation());
         if (ant != null) {
-            ant.message = joinString(text);
+            ant.setMessage(joinString(text));
             event.getPlayer().sendMessage("Set transmission message: " + ant.message);
         }
     }
