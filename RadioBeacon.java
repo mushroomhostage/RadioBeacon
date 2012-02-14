@@ -635,9 +635,15 @@ class AntennaBlockListener implements Listener {
                 return;
             }
 
+            int oldRadius = ant.getBroadcastRadius();
             ant.setTipYAtHighest(placedY);
+            int newRadius = ant.getBroadcastRadius();
 
-            player.sendMessage("Extended antenna range to " + ant.getBroadcastRadius() + " m");
+            if (oldRadius == newRadius) { 
+                player.sendMessage("Reached maximum " + newRadius + " m");
+            } else {
+                player.sendMessage("Extended antenna range to " + newRadius + " m");
+            }
         } 
     }
 
