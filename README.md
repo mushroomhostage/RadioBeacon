@@ -14,12 +14,13 @@ Works great on "random spawn point" (solitude/apocalypse) themed servers.
 * High-performance and light-weight implementation
 * Receive transmissions even if chunk is unloaded
 * Antennas are affected by weather 
+* Relay antennas for retransmitting messages
 * Multi-world aware
 
 # Usage
 
 ### Fixed Antenna Towers
-[Screenshots](http://imgur.com/a/Ft06F)
+***[Screenshots and photo tutorial](http://imgur.com/a/Ft06F)***
 
 To create a new radio beacon tower, place an iron block next to powered redstone.
 
@@ -36,6 +37,12 @@ behaves as you would expect, broadcasting from the highest contiguous iron bar.
 
 **Setting Messages**: Attach a sign to the side of your fixed antenna base, and the text of the sign will 
 automatically be included in the transmission.
+
+**Relay Antennas**: Built using a gold block instead of an iron block, relays
+retransmit messages from nearby antennas. To set a relay message, build a normal antenna
+within range and set its message. All relays within range will be notified using a special signal.
+Relays retain their message even if the original antenna is destroyed, so they can be used to add redundancy
+or extra range.
 
 **Weather**: Rain decreases the transmission and reception radius. Thundering slightly increases it,
 but lightning has a chance to strike antennas, causing their destruction.

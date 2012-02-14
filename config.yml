@@ -3,6 +3,7 @@ fixedRadiusIncreasePerBlock: 50
 fixedMaxHeightMeters: 0
 fixedRadiusStormFactor: 0.7
 fixedRadiusThunderFactor: 1.1
+fixedRadiusRelayFactor: 1.0
 fixedReceptionRadiusDivisor: 1
 fixedBaseMinY: 0
 #fixedBaseMinY: 64              # sea level

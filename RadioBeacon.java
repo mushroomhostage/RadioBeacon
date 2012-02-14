@@ -309,6 +309,10 @@ class Antenna {
             radius = (int)((double)radius * AntennaConf.fixedRadiusThunderFactor);
         }
 
+        if (isRelay) {
+            radius = (int)((double)radius * AntennaConf.fixedRadiusRelayFactor);
+        }
+
         return radius;
     }
 
@@ -382,7 +386,7 @@ class Antenna {
     }
 
     // Update any nearby relay antennas with message from this antenna, informing the player
-    public void updateRelays(Player player) {
+    public void notifyRelays(Player player) {
         List<Antenna> nearbyAnts = receiveSignals(player, getSourceLocation(), getReceptionRadius(), false);
       
         // Update any relay antennas within range
@@ -391,8 +395,8 @@ class Antenna {
                 int distance = ant.getDistance(getSourceLocation());
 
                 ant.setMessage("[Relayed " + distance + " m] " + this.getMessage());
-                RadioBeacon.log("Updated relay: " + ant);
-                player.sendMessage("Updated relay " + distance + " m away");
+                RadioBeacon.log("Notified relay: " + ant);
+                player.sendMessage("Notified relay " + distance + " m away");
             }
         }
     }
@@ -723,7 +727,7 @@ class AntennaBlockListener implements Listener {
             ant.setMessage(joinString(text));
             player.sendMessage("Set transmission message: " + ant.message);
             // setting message is a signal to update relays
-            ant.updateRelays(player);
+            ant.notifyRelays(player);
         }
     }
 
@@ -930,6 +934,7 @@ class AntennaConf {
     static int fixedExplosionReactionDelay;
     static double fixedRadiusStormFactor;
     static double fixedRadiusThunderFactor;
+    static double fixedRadiusRelayFactor;
     static int fixedReceptionRadiusDivisor;
     static int fixedMaxHeight;
     static int fixedBaseMinY;
@@ -979,6 +984,7 @@ class AntennaConf {
 
         fixedRadiusStormFactor = plugin.getConfig().getDouble("fixedRadiusStormFactor", 0.7);
         fixedRadiusThunderFactor = plugin.getConfig().getDouble("fixedRadiusThunderFactor", 1.1);
+        fixedRadiusRelayFactor = plugin.getConfig().getDouble("fixedRadiusRelayFactor", 1.0);
         fixedReceptionRadiusDivisor = plugin.getConfig().getInt("fixedReceptionRadiusDivisor", 1);
 
         fixedMaxHeight = plugin.getConfig().getInt("fixedMaxHeightMeters", 0);

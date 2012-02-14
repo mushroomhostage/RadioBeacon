@@ -19,6 +19,8 @@ to amplify, <1.0 to attenuate.
 
 **fixedRadiusThunderFactor**: Multiply radius when thundering.
 
+**fixedRadiusRelayFactor**: Multiply radius when antenna is a relay.
+
 **fixedReceptionRadiusDivisor**: Divide broadcast radius by this value to obtain the
 reception radius. If 1, reception radius is equal to broadcast radius, if 0,
 reception radius is fixed to 0 (special case -- antenna must be directly within
@@ -36,6 +38,8 @@ to acquire. Iron blocks only require 9 ingots, fairly easy to obtain; other bloc
 consider: jukebox (more difficult, requires 1 diamond + 8 planks), gold block
 (somewhat more difficult), diamond block (very expensive), or non-obtainable blocks to
 completely control who can build antennas.
+
+**fixedBaseRelayMaterial**: Material to use for tower base of relays. Example: "gold_block".
 
 **fixedAntennaMaterial**: Material to use for antenna. Example: "iron_fence" for the
 recognizable iron bars.
