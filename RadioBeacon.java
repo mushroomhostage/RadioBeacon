@@ -116,10 +116,12 @@ class Antenna {
     // TODO: map by world first
     static public ConcurrentHashMap<AntennaXZ, Antenna> xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();
 
-    AntennaXZ xz;
-    int baseY, tipY;
+    final AntennaXZ xz;
+    final int baseY;
+    int tipY;
 
     String message;
+    final boolean isRelay;
 
     // Normal antenna creation method
     public Antenna(Location loc) {
@@ -128,6 +130,8 @@ class Antenna {
         tipY = baseY;
 
         xz2Ant.put(xz, this);
+
+        isRelay = loc.getBlock().getType() == AntennaConf.fixedBaseRelayMaterial;
 
         RadioBeacon.log("New antenna " + this);
 
@@ -160,6 +164,11 @@ class Antenna {
         }
         baseY = (Integer)d.get("baseY");
         tipY = (Integer)d.get("tipY");
+        if (d.get("relay") != null) {
+            isRelay = (Boolean)d.get("relay");
+        } else {
+            isRelay = false;
+        }
 
         setMessage((String)d.get("message"));
 
@@ -183,6 +192,7 @@ class Antenna {
         d.put("tipY", tipY);
 
         d.put("message", message);
+        d.put("relay", isRelay);
         // TODO: other user data?
 
         return d;
@@ -191,6 +201,7 @@ class Antenna {
     public String toString() {
         return "<Antenna r="+getBroadcastRadius()+" height="+getHeight()+" xz="+xz+" baseY="+baseY+" tipY="+tipY+" w="+xz.world.getName()+
             " l="+getLightningAttractRadius()+" p="+getBlastPower()+
+            " r="+isRelay+" "+
             " m="+message+">";
     }
 
@@ -572,7 +583,11 @@ class AntennaBlockListener implements Listener {
                         ant.setTipYAtHighest(above.getBlockY());
                     }
 
-                    player.sendMessage("New antenna created"); //, with range "+ant.getBroadcastRadius()+" m");
+                    if (ant.isRelay) {
+                        player.sendMessage("New relay antenna created");
+                    } else {
+                        player.sendMessage("New antenna created"); //, with range "+ant.getBroadcastRadius()+" m");
+                    }
                 }
             } else {
                 if (AntennaConf.fixedUnpoweredNagMessage != null && !AntennaConf.fixedUnpoweredNagMessage.equals("")) {
@@ -889,6 +904,7 @@ class AntennaConf {
     static int fixedMaxHeight;
     static int fixedBaseMinY;
     static Material fixedBaseMaterial;
+    static Material fixedBaseRelayMaterial;
     static Material fixedAntennaMaterial;
     static boolean fixedRadiateFromTip;
     static String fixedUnpoweredNagMessage;
@@ -941,13 +957,19 @@ class AntennaConf {
         // TODO: sea level option? but depends on world
         fixedBaseMinY = plugin.getConfig().getInt("fixedBaseMinY", 0);
 
-        fixedBaseMaterial = Material.matchMaterial(plugin.getConfig().getString("fixedBaseMaterial"));
+        fixedBaseMaterial = Material.matchMaterial(plugin.getConfig().getString("fixedBaseMaterial", "iron_block"));
         if (fixedBaseMaterial == null) {
             RadioBeacon.logger.severe("Failed to match fixedBaseMaterial");
             Bukkit.getServer().getPluginManager().disablePlugin(plugin);
             return false;
         }
-
+        fixedBaseRelayMaterial = Material.matchMaterial(plugin.getConfig().getString("fixedBaseRelayMaterial", "gold_block"));
+        if (fixedBaseRelayMaterial == null) {
+            RadioBeacon.logger.severe("Failed to match fixedBaseRelayMaterial");
+            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            return false;
+        }
+ 
         fixedAntennaMaterial = Material.matchMaterial(plugin.getConfig().getString("fixedAntennaMaterial"));
         if (fixedAntennaMaterial == null) {
             RadioBeacon.logger.severe("Failed to match fixedAntennaMaterial");
@@ -996,11 +1018,11 @@ class AntennaConf {
     }
 
     static public boolean isFixedBaseMaterial(Material m) {
-        return m == AntennaConf.fixedBaseMaterial;
+        return m == AntennaConf.fixedBaseMaterial || m == AntennaConf.fixedBaseRelayMaterial;
     }
 
     static public boolean isFixedBaseMaterial(int id) {
-        return id == AntennaConf.fixedBaseMaterial.getId();
+        return id == AntennaConf.fixedBaseMaterial.getId() || id == AntennaConf.fixedBaseRelayMaterial.getId();
     }
    
     static private YamlConfiguration getAntennaConfig(Plugin plugin) {

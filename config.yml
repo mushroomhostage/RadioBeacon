@@ -8,6 +8,7 @@ fixedBaseMinY: 0
 #fixedBaseMinY: 64              # sea level
 fixedBaseMaterial: iron_block
 #fixedBaseMaterial: jukebox
+fixedBaseRelayMaterial: gold_block
 fixedAntennaMaterial: iron_fence
 #fixedRadiateFrom: base
 fixedRadiateFrom: tip
