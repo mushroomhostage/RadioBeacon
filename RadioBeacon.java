@@ -378,7 +378,15 @@ class Antenna {
     public void receiveSignals(Player player) {
         player.sendMessage("Antenna range: " + getBroadcastRadius() + " m"); //, lightning attraction: " + getLightningAttractRadius() + " m" + ", blast power: " + getBlastPower());
 
-        receiveSignals(player, getSourceLocation(), getReceptionRadius(), false);
+        List<Antenna> nearbyAnts = receiveSignals(player, getSourceLocation(), getReceptionRadius(), false);
+      
+        // Update any relay antennas within range
+        for (Antenna ant: nearbyAnts) {
+            if (ant.isRelay) {
+                ant.setMessage("[Relayed] " + this.getMessage());
+                player.sendMessage("Updating relay: " + ant);
+            }
+        }
     }
 
     // Receive signals from mobile radio held by player
@@ -429,7 +437,7 @@ class Antenna {
 
 
     // Receive signals from standing at any location
-    static public void receiveSignals(Player player, Location receptionLoc, int receptionRadius, boolean signalLock) {
+    static public List<Antenna> receiveSignals(Player player, Location receptionLoc, int receptionRadius, boolean signalLock) {
         int count = 0;
         List<Antenna> nearbyAnts = new ArrayList<Antenna>();
 
@@ -440,9 +448,15 @@ class Antenna {
             if (otherAnt.withinReceiveRange(receptionLoc, receptionRadius)) {
                 //RadioBeacon.log("Received transmission from " + otherAnt);
 
+                int distance = otherAnt.getDistance(receptionLoc);
+                if (distance == 0) {
+                    // Squelch self-transmissions to avoid interference
+                    continue;
+                }
+
                 nearbyAnts.add(otherAnt);
 
-                notifySignal(player, receptionLoc, otherAnt);
+                notifySignal(player, receptionLoc, otherAnt, distance);
             }
         }
         count = nearbyAnts.size();
@@ -467,19 +481,15 @@ class Antenna {
             player.sendMessage("Locked onto signal at " + antLoc.getDistance(player.getLocation()) + " m" + (message == null ? "" : ": " + message));
             //RadioBeacon.log("Targetting " + targetLoc);
         }
+
+        return nearbyAnts;
     }
 
     // Tell player about an incoming signal from an antenna
-    static private void notifySignal(Player player, Location receptionLoc, Antenna ant) {
+    static private void notifySignal(Player player, Location receptionLoc, Antenna ant, int distance) {
         String message = "";
         if (ant.message != null) {
             message = ": " + ant.message;
-        }
-
-        int distance = ant.getDistance(receptionLoc);
-        if (distance == 0) {
-            // Squelch self-transmissions to avoid interference
-            return;
         }
 
         player.sendMessage("Received transmission (" + distance + " m)" + message);
