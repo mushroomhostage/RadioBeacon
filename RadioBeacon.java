@@ -378,13 +378,21 @@ class Antenna {
     public void receiveSignals(Player player) {
         player.sendMessage("Antenna range: " + getBroadcastRadius() + " m"); //, lightning attraction: " + getLightningAttractRadius() + " m" + ", blast power: " + getBlastPower());
 
+        receiveSignals(player, getSourceLocation(), getReceptionRadius(), false);
+    }
+
+    // Update any nearby relay antennas with message from this antenna, informing the player
+    public void updateRelays(Player player) {
         List<Antenna> nearbyAnts = receiveSignals(player, getSourceLocation(), getReceptionRadius(), false);
       
         // Update any relay antennas within range
         for (Antenna ant: nearbyAnts) {
             if (ant.isRelay) {
-                ant.setMessage("[Relayed] " + this.getMessage());
-                player.sendMessage("Updating relay: " + ant);
+                int distance = ant.getDistance(getSourceLocation());
+
+                ant.setMessage("[Relayed " + distance + " m] " + this.getMessage());
+                RadioBeacon.log("Updated relay: " + ant);
+                player.sendMessage("Updated relay " + distance + " m away");
             }
         }
     }
@@ -691,6 +699,7 @@ class AntennaBlockListener implements Listener {
             }
             event.getPlayer().sendMessage("Cleared antenna message");
             ant.setMessage(null);
+            // do not update relay
         }
     }
 
@@ -702,8 +711,19 @@ class AntennaBlockListener implements Listener {
 
         Antenna ant = Antenna.getAntennaByAdjacent(block.getLocation());
         if (ant != null) {
+            Player player = event.getPlayer();
+
+            if (ant.isRelay) {
+                player.sendMessage("To set a relay message, build a normal antenna within range of this relay");
+                event.setCancelled(true);
+                block.breakNaturally();
+                return;
+            }
+
             ant.setMessage(joinString(text));
-            event.getPlayer().sendMessage("Set transmission message: " + ant.message);
+            player.sendMessage("Set transmission message: " + ant.message);
+            // setting message is a signal to update relays
+            ant.updateRelays(player);
         }
     }
 
