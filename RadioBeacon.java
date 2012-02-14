@@ -483,7 +483,7 @@ class Antenna {
 
         // Base
         Location base = new Location(world, x, baseY, z);
-        if (base.getBlock() == null || base.getBlock().getType() != AntennaConf.fixedBaseMaterial) {
+        if (base.getBlock() == null || !AntennaConf.isFixedBaseMaterial(base.getBlock().getType())) {
             RadioBeacon.log("checkIntact: antenna is missing base!");
             destroy(this);
             return false;
@@ -557,7 +557,7 @@ class AntennaBlockListener implements Listener {
         Block block = event.getBlock();
         Player player = event.getPlayer();
 
-        if (block.getType() == AntennaConf.fixedBaseMaterial) {
+        if (AntennaConf.isFixedBaseMaterial(block.getType())) {
             // Base material for antenna, if powered
             if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
                 if (block.getY() < AntennaConf.fixedBaseMinY) {
@@ -610,7 +610,7 @@ class AntennaBlockListener implements Listener {
         Block block = event.getBlock();
         World world = block.getWorld();
 
-        if (block.getType() == AntennaConf.fixedBaseMaterial) {
+        if (AntennaConf.isFixedBaseMaterial(block.getType())) {
             Antenna ant = Antenna.getAntenna(block.getLocation());
             
             if (ant == null) {
@@ -652,7 +652,7 @@ class AntennaBlockListener implements Listener {
                 newTipY -= 1;
 
                 pieceType = world.getBlockTypeIdAt(x, newTipY, z);
-            } while(pieceType != AntennaConf.fixedBaseMaterial.getId() &&
+            } while(!AntennaConf.isFixedBaseMaterial(pieceType) &&
                     pieceType != AntennaConf.fixedAntennaMaterial.getId() &&
                     newTipY > 0);
 
@@ -757,7 +757,7 @@ class AntennaPlayerListener implements Listener {
         ItemStack item = event.getItem();
         Player player = event.getPlayer();
 
-        if (block != null && block.getType() == AntennaConf.fixedBaseMaterial) {
+        if (block != null && AntennaConf.isFixedBaseMaterial(block.getType())) {
             Antenna ant = Antenna.getAntenna(block.getLocation());
             if (ant == null) {
                 return;
@@ -994,6 +994,14 @@ class AntennaConf {
 
         return true;
     }
+
+    static public boolean isFixedBaseMaterial(Material m) {
+        return m == AntennaConf.fixedBaseMaterial;
+    }
+
+    static public boolean isFixedBaseMaterial(int id) {
+        return id == AntennaConf.fixedBaseMaterial.getId();
+    }
    
     static private YamlConfiguration getAntennaConfig(Plugin plugin) {
         String filename = plugin.getDataFolder() + System.getProperty("file.separator") + "antennas.yml";
@@ -1085,7 +1093,7 @@ class AntennaWeatherListener implements Listener {
 
             // Ensure antenna is destroyed
             Block baseBlock = world.getBlockAt(baseLoc);
-            if (baseBlock.getType() == AntennaConf.fixedBaseMaterial) {
+            if (AntennaConf.isFixedBaseMaterial(baseBlock.getType())) {
                 baseBlock.setType(Material.AIR);
 
                 // TODO: log that it was destroyed by lightning
