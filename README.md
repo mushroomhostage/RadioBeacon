@@ -111,3 +111,4 @@ Got a server running this plugin? Feel free to post about it below.
 * [ApocalypseCraft](http://forums.bukkit.org/threads/wgen-rpg-mech-apocalypsecraft-instances-radiation-realism-perks-factions-and-more.23197/) - 
  ([notes](http://www.reddit.com/r/minerapocalypse/comments/oyhpq/anyone_else_see_this_plugin_apocalypsecraft/))
 
+***[Fork me on GitHub](https://github.com/mushroomhostage/RadioBeacon)***
