@@ -17,6 +17,8 @@ Works great on "random spawn point" (solitude/apocalypse) themed servers.
 * Relay antennas for retransmitting messages
 * Multi-world aware
 
+**[Download 1.1 beta](http://dev.bukkit.org/server-mods/radiobeacon/files/4-radio-beacon-1-1/)** - now with relays!
+
 # Usage
 
 ### Fixed Antenna Towers
@@ -98,13 +100,20 @@ Subcommands:
 * /antennas load: Force reload from disk
 * /antennas check: Compare all antennas against the actual blocks in the world, rebuilding the internal state if necessary. Should not be necessary during normal gameplay, but if blocks are updated without RadioBeacon receiving any events (for example, by editing the world in MCEdit), admins can use this command to repair any affected antennas.
 
+## See Also
+Servers running RadioBeacon:
 
-## Servers
 * [Solitude - An Apocalypse Server (Blocktopia)](http://blocktopia.net/forum/threads/solitude-an-apocalypse-server.4712/)
+* [Survivocolypse](http://www.survivocolypse.com/)
 
 Got a server running this plugin? Feel free to post about it below.
 
-## See Also
+Reviews of RadioBeacon:
+
+* [Plugin Showcase - RadioBeacon - WoopaGaming](http://www.youtube.com/watch?v=s4jUOxoJmNg) 
+
+
+Other plugins:
 
 * [Cake's Miner Apocalypse](http://dev.bukkit.org/server-mods/cakes-miner-apocalypse/) - a significant inspiration for RadioBeacon, with a somewhat different realization of radios; also includes many other apocalypse-related features
 
