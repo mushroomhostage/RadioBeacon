@@ -82,6 +82,14 @@ players use compasses to locate buried treasure. Or want to encourage highly vis
 towers? Set the minimum base antenna Y in the configuration, and lower the radius increase per
 block.
 
+Playing on a hardcore PvP server and having trouble with people stealing your radio tower iron blocks?
+Why not [rig it with TNT](http://blocktopia.net/forum/threads/solitude-an-apocalypse-server.4712/page-6#post-77730)?
+
+You can navigate to antennas on foot of course, but RadioBeacon also works very well with other
+plugins or mods offering alternative modes of transportation, *especially* flight:
+
+[Screenshot](http://i.imgur.com/8xUJK.jpg) of RadioBeacon being used while landing at an airstrip (Flan's Plane mod)
+
 ## Configuration
 RadioBeacon is highly configurable for a variety of applications. 
 For a full list of configuration options, see [Configuration](http://dev.bukkit.org/server-mods/radiobeacon/pages/configuration/).
@@ -121,3 +129,4 @@ Other plugins:
  ([notes](http://www.reddit.com/r/minerapocalypse/comments/oyhpq/anyone_else_see_this_plugin_apocalypsecraft/))
 
 ***[Fork me on GitHub](https://github.com/mushroomhostage/RadioBeacon)***
+
