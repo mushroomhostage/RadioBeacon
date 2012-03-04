@@ -52,6 +52,17 @@ possibly a failed attempt at creating an antenna (must place redstone *before* t
 iron block). By default, sends a helpful tip about how to create an antenna. Set to an 
 empty string or null to disable if it becomes annoying.
 
+**fixedDenyCreateMessage**: Message to send to players who do not have permission
+to build radio towers (lacking the "radiobeacon.create" permission node).
+
+**fixedDenyAddMessageBreak**: Whether to break the sign block, returning it to the player,
+if they attempt to place a sign on a tower they are not allowed to set the message for.
+
+**fixedDenyAddMessageMessage**: Message to send to players who do not have permission
+to add transmission messages to existing radio towers (lacking "radiobeacon.addmessage"
+permission node).
+
+
 
 
 Lightning probability can be tuned by adjusting the "attraction radius":
