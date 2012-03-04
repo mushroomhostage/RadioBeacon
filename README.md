@@ -95,12 +95,18 @@ RadioBeacon is highly configurable for a variety of applications.
 For a full list of configuration options, see [Configuration](http://dev.bukkit.org/server-mods/radiobeacon/pages/configuration/).
 
 ## Permissions and Commands
-RadioBeacon only adds one new command, /antennas. Players can use it to see the total number of
-antennas on the server, but no other information. Ops (by default) can see detailed information.
+Permission nodes:
+
+* radiobeacon.create (true): Allows you to build new radio beacon antenna towers
+
+* radiobeacon.addmessage (true): Allows you to add messages to towers by placing signs
 
 * radiobeacon.reveal (op): Allows you to list the coordinates of all antennas
 
 * radiobeacon.admin (op): Allows you to save/load/repair antennas
+
+RadioBeacon only adds one new command, /antennas. Players can use it to see the total number of
+antennas on the server, but no other information. Ops (by default) can see detailed information.
 
 Subcommands:
 
