@@ -475,23 +475,27 @@ class Antenna {
         if (count == 0) {
             player.sendMessage("No signals within " + receptionRadius + " m");
         } else if (signalLock) {
-            // Player radio compass targetting
-            Integer targetInteger = AntennaPlayerListener.playerTargets.get(player);
-            Location targetLoc;
-            int targetInt;
-            if (targetInteger == null) {
-                targetInt = 0;
-            } else {
-                targetInt = Math.abs(targetInteger.intValue()) % count;
+            if (plugin.getConfig("mobileSignalLock", true)) {
+                // Player radio compass targetting
+                Integer targetInteger = AntennaPlayerListener.playerTargets.get(player);
+                Location targetLoc;
+                int targetInt;
+                if (targetInteger == null) {
+                    targetInt = 0;
+                } else {
+                    targetInt = Math.abs(targetInteger.intValue()) % count;
+                }
+
+                Antenna antLoc = nearbyAnts.get(targetInt);
+                targetLoc = antLoc.getSourceLocation();
+                if (plugin.getConfig("mobileSetCompassTarget", true)) {
+                    player.setCompassTarget(targetLoc);
+                }
+
+                String message = antLoc.getMessage();
+                player.sendMessage("Locked onto signal at " + antLoc.getDistance(player.getLocation()) + " m" + (message == null ? "" : ": " + message));
+                //RadioBeacon.log("Targetting " + targetLoc);
             }
-
-            Antenna antLoc = nearbyAnts.get(targetInt);
-            targetLoc = antLoc.getSourceLocation();
-            player.setCompassTarget(targetLoc);
-
-            String message = antLoc.getMessage();
-            player.sendMessage("Locked onto signal at " + antLoc.getDistance(player.getLocation()) + " m" + (message == null ? "" : ": " + message));
-            //RadioBeacon.log("Targetting " + targetLoc);
         }
 
         return nearbyAnts;

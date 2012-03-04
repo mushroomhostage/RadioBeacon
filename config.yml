@@ -44,5 +44,7 @@ mobileTaskPeriodSeconds: 15
 mobileRightClickTuneDown: true
 mobileLeftClickTuneUp: true
 mobileShiftTune: false
+mobileSetCompassTarget: true
+mobileSignalLock: true
 
 verbose: true

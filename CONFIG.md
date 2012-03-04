@@ -148,5 +148,9 @@ is required. At least one should be enabled.
 
 **mobileShiftTune**: If true, require shift-clicking (sneaking) to tune the compass. 
 
+**mobileSetCompassTarget**: Set to false to disable setting the compass targetting the locked-on signal.
+
+**mobileSignalLock**: Set to false to disable
+
 ## Debugging
 **verbose**: If true, detailed information will be logged using log.info(). 
