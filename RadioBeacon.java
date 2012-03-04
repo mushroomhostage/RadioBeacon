@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.Iterator;
 import java.util.logging.Logger;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.*;
 
@@ -112,8 +113,8 @@ class AntennaXZ implements Comparable {
 }
 
 
-class Antenna {
-    // TODO: map by world first
+class Antenna implements Comparable<Antenna> {
+    // TODO: map by world first? see discussion http://forums.bukkit.org/threads/performance-question-merge-world-with-chunk-coordinates-or-not.60160/#post-969934
     static public ConcurrentHashMap<AntennaXZ, Antenna> xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();
 
     final AntennaXZ xz;
@@ -453,7 +454,6 @@ class Antenna {
         int count = 0;
         List<Antenna> nearbyAnts = new ArrayList<Antenna>();
 
-        // TODO: can we get deterministic iteration order? for target index
         for (Map.Entry<AntennaXZ,Antenna> pair : Antenna.xz2Ant.entrySet()) {
             Antenna otherAnt = pair.getValue();
 
@@ -471,6 +471,10 @@ class Antenna {
                 notifySignal(player, receptionLoc, otherAnt, distance);
             }
         }
+
+        // Sort so reception list is deterministic, for target index
+        Collections.sort(nearbyAnts);
+
         count = nearbyAnts.size();
         if (count == 0) {
             player.sendMessage("No signals within " + receptionRadius + " m");
@@ -553,6 +557,12 @@ class Antenna {
             count += 1;
         }
         sender.sendMessage("Updated "+fixed+" of "+count+" antennas");
+    }
+
+   
+    // Delegate comparison to location
+    public int compareTo(Antenna otherAnt) {
+        return xz.compareTo(otherAnt.xz);
     }
 }
 
