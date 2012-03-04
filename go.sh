@@ -4,4 +4,3 @@ rm -rf me
 mkdir -p me/exphc/RadioBeacon
 mv *.class me/exphc/RadioBeacon
 jar cf RadioBeacon.jar me/ *.yml *.java LICENSE *.md
-cp RadioBeacon.jar ../plugins/

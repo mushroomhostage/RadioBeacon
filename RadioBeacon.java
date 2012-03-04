@@ -139,7 +139,7 @@ class Antenna {
     }
 
     // Load from serialized format (from disk)
-    public Antenna(Map<String,Object> d) {
+    public Antenna(Map<?,?> d) {
         World world;
 
         if (d.get("world") != null) {
@@ -1085,7 +1085,7 @@ class AntennaConf {
     static public void loadAntennas(RadioBeacon plugin) {
         YamlConfiguration antennaConfig = getAntennaConfig(plugin);
 
-        List<Map<String,Object>> all;
+        List<Map<?,?>> all;
     
         Antenna.xz2Ant = new ConcurrentHashMap<AntennaXZ, Antenna>();   // clear existing
 
@@ -1094,10 +1094,14 @@ class AntennaConf {
             return;
         }
 
+        // TODO: this is broken in 1.1-R6
+        // found   : java.util.List<java.util.Map<?,?>>
+        // required: java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
+        // http://pastebin.com/f3uhqa9F
         all = antennaConfig.getMapList("antennas");
 
         int i = 0;
-        for (Map<String,Object> d: all) {
+        for (Map<?,?> d: all) {
             new Antenna(d); 
             i += 1;
         }
