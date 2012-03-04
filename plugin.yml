@@ -11,11 +11,15 @@ permissions:
     radiobeacon.*:
         children:
             radiobeacon.create: true
+            radiobeacon.addmessage: true
             radiobeacon.reveal: true
             radiobeacon.admin: true
         default: false
     radiobeacon.create:
         description: Allows you to build new radio beacon antenna towers
+        default: true
+    radiobeacon.addmessage:
+        description: Allows you to add messages to towers by placing signs
         default: true
     radiobeacon.reveal:
         description: Allows you to list the coordinates of all antennas

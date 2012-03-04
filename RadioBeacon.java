@@ -738,6 +738,18 @@ class AntennaBlockListener implements Listener {
                 return;
             }
 
+            if (!player.hasPermission("radiobeacon.addmessage")) {
+                String message = plugin.getConfig().getString("fixedDenyAddMessageMessage", "Sorry, you do not have permission to add transmission messages");
+                if (message != null && !message.equals("")) {
+                    player.sendMessage(message);
+                }
+                event.setCancelled(true);
+                if (plugin.getConfig().getBoolean("fixedDenyAddMessageBreak", true)) {
+                    block.breakNaturally();
+                }
+                return;
+            }
+
             ant.setMessage(joinString(text));
             player.sendMessage("Set transmission message: " + ant.message);
             // setting message is a signal to update relays

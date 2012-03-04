@@ -1,7 +1,8 @@
 X   1.1.1
     * Improve message when user builds beyond maximum height
     * Ignore cancelled events
-    * Add radiobeacon.create permission node
+    * Add radiobeacon.create and radiobeacon.addmessage permission nodes (ticket 2)
+    * Update for CraftBukkit 1.1-R6
     
 2012-02-13  1.1
     * Add relay antennas
