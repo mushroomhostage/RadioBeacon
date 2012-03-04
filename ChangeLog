@@ -1,6 +1,7 @@
-X   1.1.1
+2012-03-04  1.1.1
     * Add radiobeacon.create and radiobeacon.addmessage permission nodes (ticket 2)
     * Add configuration options to disable signal lock and compass targetting
+    * Sort portable compass radio received signals (nearest first)
     * Improve message when user builds beyond maximum height
     * Ignore cancelled events
     * Update for CraftBukkit 1.1-R6

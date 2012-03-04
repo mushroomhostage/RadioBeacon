@@ -39,6 +39,7 @@ import java.util.UUID;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.*;
 
@@ -109,6 +110,19 @@ class AntennaXZ implements Comparable {
     public int hashCode() {
         // lame hashing TODO: improve?
         return x * z;
+    }
+}
+
+// Compare antennas based on their distance from some fixed location
+class AntennaDistanceComparator implements Comparator<Antenna> {
+    Location otherLoc;
+
+    public AntennaDistanceComparator(Location otherLoc) {
+        this.otherLoc = otherLoc;
+    }
+
+    public int compare(Antenna a, Antenna b) {
+        return a.getDistance(otherLoc) - b.getDistance(otherLoc);
     }
 }
 
@@ -467,13 +481,14 @@ class Antenna implements Comparable<Antenna> {
                 }
 
                 nearbyAnts.add(otherAnt);
-
-                notifySignal(player, receptionLoc, otherAnt, distance);
             }
         }
 
         // Sort so reception list is deterministic, for target index
-        Collections.sort(nearbyAnts);
+        Collections.sort(nearbyAnts, new AntennaDistanceComparator(receptionLoc));
+        for (Antenna otherAnt: nearbyAnts) {
+            notifySignal(player, receptionLoc, otherAnt, otherAnt.getDistance(receptionLoc));
+        }
 
         count = nearbyAnts.size();
         if (count == 0) {
