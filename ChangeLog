@@ -4,7 +4,7 @@
     * Add configuration options to disable signal lock and compass targetting
     * Improve message when user builds beyond maximum height
     * Ignore cancelled events
-    * Update for CraftBukkit 1.1-R6, also tested on 1.2-R0.1
+    * Update for CraftBukkit 1.2.3-R0.1 beta build and 1.1-R6 recommended build
     
 2012-02-13  1.1
     * Add relay antennas
