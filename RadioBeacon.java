@@ -585,7 +585,7 @@ class AntennaBlockListener implements Listener {
     }
 
     // Building an antenna
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
         Player player = event.getPlayer();
@@ -593,6 +593,14 @@ class AntennaBlockListener implements Listener {
         if (AntennaConf.isFixedBaseMaterial(block.getType())) {
             // Base material for antenna, if powered
             if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
+                if (!player.hasPermission("radiobeacon.create")) {
+                    String message = plugin.getConfig().getString("fixedDenyCreateMessage", "Sorry, you do not have permission to build radio towers");
+                    if (message != null && !message.equals("")) {
+                        player.sendMessage(message);
+                    }
+                    return;
+                }
+
                 if (block.getY() < AntennaConf.fixedBaseMinY) {
                     player.sendMessage("Not creating antenna below depth of " + AntennaConf.fixedBaseMinY + " m");
                 } else {
@@ -648,7 +656,7 @@ class AntennaBlockListener implements Listener {
     }
 
     // Destroying an antenna
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         World world = block.getWorld();
@@ -714,7 +722,7 @@ class AntennaBlockListener implements Listener {
     }
 
     // Signs to set transmission message
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onSignChange(SignChangeEvent event) {
         Block block = event.getBlock();
         String[] text = event.getLines();
@@ -748,7 +756,7 @@ class AntennaBlockListener implements Listener {
 
     // Currently antennas retain their magnetized properties even when redstone current is removed
 /*
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onBlockRedstoneChange(BlockRedstoneEvent event) {
          // TODO: find out how to disable antennas, get when block becomes unpowered
         World world = event.getBlock().getWorld();
@@ -766,7 +774,7 @@ class AntennaBlockListener implements Listener {
     }
     */
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onEntityExplode(EntityExplodeEvent event) {
         if (event.isCancelled()) {
             return;
@@ -806,7 +814,7 @@ class AntennaPlayerListener implements Listener {
         Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
         ItemStack item = event.getItem();
@@ -871,7 +879,7 @@ class AntennaPlayerListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onItemHeldChange(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItem(event.getNewSlot());
@@ -1136,7 +1144,7 @@ class AntennaWeatherListener implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
     public void onLightningStrike(LightningStrikeEvent event) { 
         World world = event.getWorld();
         Location strikeLocation = event.getLightning().getLocation();
@@ -1232,7 +1240,7 @@ class AntennaNetworkListener implements Listener {
     }
 
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled=true)
     public void onAntennaChange(AntennaChangeEvent event) {
         RadioBeacon.log("Cool it worked! "+event);
     }

@@ -1,5 +1,7 @@
 X   1.1.1
     * Improve message when user builds beyond maximum height
+    * Ignore cancelled events
+    * Add radiobeacon.create permission node
     
 2012-02-13  1.1
     * Add relay antennas

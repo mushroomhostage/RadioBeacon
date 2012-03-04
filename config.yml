@@ -13,8 +13,6 @@ fixedBaseRelayMaterial: gold_block
 fixedAntennaMaterial: iron_fence
 #fixedRadiateFrom: base
 fixedRadiateFrom: tip
-fixedUnpoweredNagMessage: 'Tip: remove and place this block near redstone current to build an antenna'
-#fixedUnpoweredNagMessage: ''
 fixedLightningAttractRadiusInitial: 3
 fixedLightningAttractRadiusIncreasePerBlock: 0.1
 fixedLightningAttractRadiusMax: 6
@@ -26,6 +24,10 @@ fixedBlastPowerIncreasePerBlock: 0.4
 fixedBlastPowerMax: 6.0
 fixedBlastSetFire: true
 fixedExplosionReactionDelayTicks: 20
+fixedUnpoweredNagMessage: 'Tip: remove and place this block near redstone current to build an antenna'
+#fixedUnpoweredNagMessage: ''
+fixedDenyCreateMessage: 'Sorry, you do not have permission to build radio towers'
+#fixedDenyCreateMessage: ''
 
 mobileInitialRadius: 0
 mobileIncreaseRadius: 10
