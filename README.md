@@ -17,7 +17,7 @@ Works great on "random spawn point" (solitude/apocalypse) themed servers.
 * Relay antennas for retransmitting messages
 * Multi-world aware
 
-**[Download 1.1 beta](http://dev.bukkit.org/server-mods/radiobeacon/files/4-radio-beacon-1-1/)** - now with relays!
+**New! [Download RadioBeacon 1.1.1](http://dev.bukkit.org/server-mods/radiobeacon/files/5-radio-beacon-1-1-1/)** - updated for 1.2.3-R0.1 and 1.1-R6
 
 # Usage
 
