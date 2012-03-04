@@ -148,9 +148,10 @@ is required. At least one should be enabled.
 
 **mobileShiftTune**: If true, require shift-clicking (sneaking) to tune the compass. 
 
-**mobileSetCompassTarget**: Set to false to disable setting the compass targetting the locked-on signal.
+**mobileSetCompassTarget**: Set to false to disable setting the compass targetting the locked-on signal. Requires mobileSignalLock.
 
-**mobileSignalLock**: Set to false to disable
+**mobileSignalLock**: Set to false to disable locking onto nearby signals. When disabled, you'll still be able to receive signals
+with a compass, but their distance and the "locked on" message will no longer be shown.
 
 ## Debugging
 **verbose**: If true, detailed information will be logged using log.info(). 

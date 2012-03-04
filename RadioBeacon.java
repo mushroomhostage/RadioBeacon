@@ -475,7 +475,7 @@ class Antenna {
         if (count == 0) {
             player.sendMessage("No signals within " + receptionRadius + " m");
         } else if (signalLock) {
-            if (plugin.getConfig("mobileSignalLock", true)) {
+            if (AntennaConf.mobileSignalLock) {
                 // Player radio compass targetting
                 Integer targetInteger = AntennaPlayerListener.playerTargets.get(player);
                 Location targetLoc;
@@ -488,7 +488,7 @@ class Antenna {
 
                 Antenna antLoc = nearbyAnts.get(targetInt);
                 targetLoc = antLoc.getSourceLocation();
-                if (plugin.getConfig("mobileSetCompassTarget", true)) {
+                if (AntennaConf.mobileSetCompassTarget) {
                     player.setCompassTarget(targetLoc);
                 }
 
@@ -598,7 +598,7 @@ class AntennaBlockListener implements Listener {
             // Base material for antenna, if powered
             if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
                 if (!player.hasPermission("radiobeacon.create")) {
-                    String message = plugin.getConfig().getString("fixedDenyCreateMessage", "Sorry, you do not have permission to build radio towers");
+                    String message = AntennaConf.fixedDenyCreateMessage;
                     if (message != null && !message.equals("")) {
                         player.sendMessage(message);
                     }
@@ -743,12 +743,12 @@ class AntennaBlockListener implements Listener {
             }
 
             if (!player.hasPermission("radiobeacon.addmessage")) {
-                String message = plugin.getConfig().getString("fixedDenyAddMessageMessage", "Sorry, you do not have permission to add transmission messages");
+                String message = AntennaConf.fixedDenyAddMessageMessage;
                 if (message != null && !message.equals("")) {
                     player.sendMessage(message);
                 }
                 event.setCancelled(true);
-                if (plugin.getConfig().getBoolean("fixedDenyAddMessageBreak", true)) {
+                if (AntennaConf.fixedDenyAddMessageBreak) {
                     block.breakNaturally();
                 }
                 return;
@@ -973,6 +973,9 @@ class AntennaConf {
     static Material fixedAntennaMaterial;
     static boolean fixedRadiateFromTip;
     static String fixedUnpoweredNagMessage;
+    static String fixedDenyCreateMessage;
+    static boolean fixedDenyAddMessageBreak;
+    static String fixedDenyAddMessageMessage;
 
     static int mobileInitialRadius;
     static int mobileIncreaseRadius;
@@ -986,6 +989,8 @@ class AntennaConf {
     static boolean mobileShiftTune;
     static int mobileScanBonusRadius;
     static int mobileScanBonusMaxRadius;
+    static boolean mobileSetCompassTarget;
+    static boolean mobileSignalLock;
 
     static boolean verbose;
 
@@ -1064,6 +1069,11 @@ class AntennaConf {
         mobileRadiusStormFactor = plugin.getConfig().getDouble("mobileRadiusStormFactor", 1.0);
         mobileRadiusThunderFactor = plugin.getConfig().getDouble("mobileRadiusThunderFactor", 1.0);
 
+        fixedDenyCreateMessage = plugin.getConfig().getString("fixedDenyCreateMessage", "Sorry, you do not have permission to build radio towers");
+        fixedDenyAddMessageBreak = plugin.getConfig().getBoolean("fixedDenyAddMessageBreak", true);
+        fixedDenyAddMessageMessage = plugin.getConfig().getString("fixedDenyAddMessageMessage", "Sorry, you do not have permission to add transmission messages");
+
+
 
         int TICKS_PER_SECOND = 20;
         mobileTaskStartDelaySeconds = plugin.getConfig().getInt("mobileTaskStartDelaySeconds", 0) * TICKS_PER_SECOND;
@@ -1074,6 +1084,8 @@ class AntennaConf {
         mobileShiftTune = plugin.getConfig().getBoolean("mobileShiftTune", false);
         mobileScanBonusRadius = plugin.getConfig().getInt("mobileScanBonusRadius", 0);
         mobileScanBonusMaxRadius = plugin.getConfig().getInt("mobileScanBonusMaxRadius", 0);
+        mobileSetCompassTarget = plugin.getConfig().getBoolean("mobileSetCompassTarget", true);
+        mobileSignalLock = plugin.getConfig().getBoolean("mobileSignalLock", true);
 
         verbose = plugin.getConfig().getBoolean("verbose", true);
         
