@@ -7,6 +7,9 @@ commands:
     antennas:
         description: Show all antennas
         usage: /antennas
+    toggleradio:
+        description: Turn your portable compass radio on or off
+        usage: /toggleradio
 permissions:
     radiobeacon.*:
         children:

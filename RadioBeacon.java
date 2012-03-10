@@ -849,6 +849,9 @@ class AntennaPlayerListener implements Listener {
     // How many scan iterations the player has faithfully held onto their compass for
     static ConcurrentHashMap<Player, Integer> playerScanBonus = new ConcurrentHashMap<Player, Integer>();
 
+    // Whether player portable radio has been disabled using /toggleradio
+    static ConcurrentHashMap<Player, Boolean> playerDisabled = new ConcurrentHashMap<Player, Boolean>();
+
     public AntennaPlayerListener(RadioBeacon pl) {
         plugin = pl;
 
@@ -951,20 +954,28 @@ class ReceptionTask implements Runnable {
             ItemStack item = player.getItemInHand();
 
             if (item != null && item.getType() == Material.COMPASS) {
-                // if scan increase is enabled, increment scan # each scan 
-                if (AntennaConf.mobileScanBonusRadius != 0) {   
-                    Integer scanBonusObject = AntennaPlayerListener.playerScanBonus.get(player);
-                    int scanBonus = scanBonusObject == null ? 0 : scanBonusObject.intValue();
-
-                    int newScanBonus = scanBonus + AntennaConf.mobileScanBonusRadius;
-                    newScanBonus = Math.min(newScanBonus, AntennaConf.mobileScanBonusMaxRadius);
-
-                    AntennaPlayerListener.playerScanBonus.put(player, newScanBonus);
+                Boolean disabledObject = AntennaPlayerListener.playerDisabled.get(player);
+                boolean disabled = false;
+                if (disabledObject != null) {
+                    disabled = disabledObject.booleanValue();
                 }
 
+                if (!disabled) {
+                    // if scan increase is enabled, increment scan # each scan 
+                    if (AntennaConf.mobileScanBonusRadius != 0) {   
+                        Integer scanBonusObject = AntennaPlayerListener.playerScanBonus.get(player);
+                        int scanBonus = scanBonusObject == null ? 0 : scanBonusObject.intValue();
 
-                // Compass = mobile radio
-                Antenna.receiveSignalsAtPlayer(player);
+                        int newScanBonus = scanBonus + AntennaConf.mobileScanBonusRadius;
+                        newScanBonus = Math.min(newScanBonus, AntennaConf.mobileScanBonusMaxRadius);
+
+                        AntennaPlayerListener.playerScanBonus.put(player, newScanBonus);
+                    }
+
+
+                    // Compass = mobile radio
+                    Antenna.receiveSignalsAtPlayer(player);
+                }
             }
         }
 
@@ -1352,37 +1363,68 @@ public class RadioBeacon extends JavaPlugin {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-        if (!cmd.getName().equalsIgnoreCase("antennas")) {
-            return false;
-        }
-
-        if (args.length > 0) {
-            if (args[0].equals("list")) {
+        if (cmd.getName().equalsIgnoreCase("antennas")) {
+            if (args.length > 0) {
+                if (args[0].equals("list")) {
+                    listAntennas(sender);
+                } else if (args[0].equals("save")) {
+                    if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
+                        AntennaConf.saveAntennas(this);
+                    } else {
+                        sender.sendMessage("You do not have permission to save antennas");
+                    }
+                } else if (args[0].equals("load")) {
+                    if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
+                        AntennaConf.loadAntennas(this);
+                    } else {
+                        sender.sendMessage("You do not have permission to load antennas");
+                    }
+                } else if (args[0].equals("check")) {
+                    if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
+                        Antenna.checkIntactAll(sender);
+                    } else {
+                        sender.sendMessage("You do not have permission to check antennas");
+                    }
+                }
+            } else {
                 listAntennas(sender);
-            } else if (args[0].equals("save")) {
-                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
-                    AntennaConf.saveAntennas(this);
+            }
+
+            return true;
+        } else if (cmd.getName().equalsIgnoreCase("toggleradio")) {
+            Player player = null;
+
+            if (args.length > 0) {
+                String playerName = args[0];
+                player = Bukkit.getPlayer(playerName);
+            } else {
+                if (sender instanceof Player) {
+                    player = (Player)sender;
                 } else {
-                    sender.sendMessage("You do not have permission to save antennas");
-                }
-            } else if (args[0].equals("load")) {
-                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
-                    AntennaConf.loadAntennas(this);
-                } else {
-                    sender.sendMessage("You do not have permission to load antennas");
-                }
-            } else if (args[0].equals("check")) {
-                if (!(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.admin")) {
-                    Antenna.checkIntactAll(sender);
-                } else {
-                    sender.sendMessage("You do not have permission to check antennas");
+                    sender.sendMessage("Usage: /toggleradio <player>");
+                    return true;
                 }
             }
-        } else {
-            listAntennas(sender);
-        }
+            if (player == null) {
+                sender.sendMessage("No such player");
+                return true;
+            }
 
-        return true;
+            Boolean obj = AntennaPlayerListener.playerDisabled.get(player);
+            boolean newState;
+            if (obj == null) {
+                newState = true;
+            } else {
+                newState = !obj.booleanValue();
+            }
+
+            AntennaPlayerListener.playerDisabled.put(player, newState);
+            
+            sender.sendMessage(ChatColor.GREEN + "Toggled radio "+(newState ? "off" : "on"));
+            
+            return true;
+        }
+        return false;
     }
 
     public static void log(String message) {

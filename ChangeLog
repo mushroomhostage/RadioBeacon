@@ -1,3 +1,7 @@
+2012-03-09  1.1.2
+    * Add /toggleradio for players to turn off their portable compass radio
+    * Ignore saved antennas from worlds not loaded
+
 2012-03-04  1.1.1
     * Add sorting to portable compass radio received signals (nearest first)
     * Add radiobeacon.create and radiobeacon.addmessage permission nodes (ticket 2)
