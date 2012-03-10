@@ -5,6 +5,8 @@ broadcasting signals to be picked up by anyone within range and the proper equip
 
 Works great on "random spawn point" (solitude/apocalypse) themed servers.
 
+***[Download RadioBeacon 1.1.2](http://dev.bukkit.org/server-mods/radiobeacon/files/6-radio-beacon-1-1-2/)*** - updated for 1.2.3-R0.1, 1.1-R7, and 1.1-R4
+
 # Features
 * Uses existing in-game items (iron blocks, bars, compasses)
 * No commands or client mods needed
