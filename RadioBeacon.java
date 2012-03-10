@@ -420,7 +420,7 @@ class Antenna implements Comparable<Antenna> {
     static public void receiveSignalsAtPlayer(Player player) {
         ItemStack item = player.getItemInHand();
 
-        if (item == null || item.getType() != Material.COMPASS) {
+        if (item == null || item.getType() != Material.COMPASS && AntennaPlayerListener.playerRadioEnabled(player)) {
             // Compass = mobile radio
             return;
         }
@@ -852,6 +852,17 @@ class AntennaPlayerListener implements Listener {
     // Whether player portable radio has been disabled using /toggleradio
     static ConcurrentHashMap<Player, Boolean> playerDisabled = new ConcurrentHashMap<Player, Boolean>();
 
+    static boolean playerRadioEnabled(Player player) {
+        Boolean disabledObject = AntennaPlayerListener.playerDisabled.get(player);
+        boolean disabled = false;
+        if (disabledObject != null) {
+            disabled = disabledObject.booleanValue();
+        }
+
+        return !disabled;
+    }
+
+ 
     public AntennaPlayerListener(RadioBeacon pl) {
         plugin = pl;
 
@@ -883,7 +894,7 @@ class AntennaPlayerListener implements Listener {
             }
 
             // TODO: and if click anywhere within antenna? maybe not unless holding compass
-        } else if (item != null && item.getType() == Material.COMPASS) {
+        } else if (item != null && item.getType() == Material.COMPASS && AntennaPlayerListener.playerRadioEnabled(player)) {
             if (AntennaConf.mobileShiftTune) {
                 // hold Shift + click to tune
                 if (!player.isSneaking()) { 
@@ -928,7 +939,10 @@ class AntennaPlayerListener implements Listener {
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItem(event.getNewSlot());
 
-        if (item != null && item.getType() == Material.COMPASS) {
+        if (item != null && item.getType() == Material.COMPASS && AntennaPlayerListener.playerRadioEnabled(player)) {
+            // TODO: this actually doesn't receive signals on change, since this method checks
+            // the player's items in hand, and the event is called before they actually change -
+            // but, I actually like this design better since the player has to wait to receive.
             Antenna.receiveSignalsAtPlayer(player);
         } else {    
             // if scan increase is enabled, changing items resets scan bonus
@@ -953,29 +967,21 @@ class ReceptionTask implements Runnable {
         for (Player player: Bukkit.getOnlinePlayers()) {
             ItemStack item = player.getItemInHand();
 
-            if (item != null && item.getType() == Material.COMPASS) {
-                Boolean disabledObject = AntennaPlayerListener.playerDisabled.get(player);
-                boolean disabled = false;
-                if (disabledObject != null) {
-                    disabled = disabledObject.booleanValue();
+            if (item != null && item.getType() == Material.COMPASS && AntennaPlayerListener.playerRadioEnabled(player)) {
+               // if scan increase is enabled, increment scan # each scan 
+                if (AntennaConf.mobileScanBonusRadius != 0) {   
+                    Integer scanBonusObject = AntennaPlayerListener.playerScanBonus.get(player);
+                    int scanBonus = scanBonusObject == null ? 0 : scanBonusObject.intValue();
+
+                    int newScanBonus = scanBonus + AntennaConf.mobileScanBonusRadius;
+                    newScanBonus = Math.min(newScanBonus, AntennaConf.mobileScanBonusMaxRadius);
+
+                    AntennaPlayerListener.playerScanBonus.put(player, newScanBonus);
                 }
 
-                if (!disabled) {
-                    // if scan increase is enabled, increment scan # each scan 
-                    if (AntennaConf.mobileScanBonusRadius != 0) {   
-                        Integer scanBonusObject = AntennaPlayerListener.playerScanBonus.get(player);
-                        int scanBonus = scanBonusObject == null ? 0 : scanBonusObject.intValue();
 
-                        int newScanBonus = scanBonus + AntennaConf.mobileScanBonusRadius;
-                        newScanBonus = Math.min(newScanBonus, AntennaConf.mobileScanBonusMaxRadius);
-
-                        AntennaPlayerListener.playerScanBonus.put(player, newScanBonus);
-                    }
-
-
-                    // Compass = mobile radio
-                    Antenna.receiveSignalsAtPlayer(player);
-                }
+                // Compass = mobile radio
+                Antenna.receiveSignalsAtPlayer(player);
             }
         }
 
