@@ -1155,7 +1155,12 @@ class AntennaConf {
 
         int i = 0;
         for (Map<?,?> d: all) {
-            new Antenna(d); 
+            try {
+                new Antenna(d); 
+            } catch (Exception e) {
+                RadioBeacon.log("Skipping antenna "+d+": exception "+e);
+                continue;
+            }
             i += 1;
         }
 
