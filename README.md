@@ -17,8 +17,6 @@ Works great on "random spawn point" (solitude/apocalypse) themed servers.
 * Relay antennas for retransmitting messages
 * Multi-world aware
 
-**New! [Download RadioBeacon 1.1.1](http://dev.bukkit.org/server-mods/radiobeacon/files/5-radio-beacon-1-1-1/)** - updated for 1.2.3-R0.1 and 1.1-R6
-
 # Usage
 
 ### Fixed Antenna Towers
@@ -64,6 +62,9 @@ will turn off scanning.
 To tune into a signal, left- or right-click the compass. The next scan will report
 which signal you have locked onto, and the compass needle will point in its direction.
 
+If it interferes with other plugins which use compasses, players can turn off their
+radios using the /toggleradio command.
+
 ### Tips & Tricks
 Enderpearls work very well for maintaining tall antennas. Thrown just right,
 they will let you teleport inside of the iron bars, without falling, and also help you safely get
@@ -105,7 +106,8 @@ Permission nodes:
 
 * radiobeacon.admin (op): Allows you to save/load/repair antennas
 
-RadioBeacon only adds one new command, /antennas. Players can use it to see the total number of
+RadioBeacon adds two new commands: /toggleradio for disabling/enabling per-player portable
+compass radios, and /antennas for fixed radio tower antennas. Players can use /antennas to see the total number of
 antennas on the server, but no other information. Ops (by default) can see detailed information.
 
 Subcommands:
@@ -120,7 +122,9 @@ Servers running RadioBeacon:
 * [Solitude - An Apocalypse Server (Blocktopia)](http://blocktopia.net/forum/threads/solitude-an-apocalypse-server.4712/)
 * [Survivocolypse](http://www.survivocolypse.com/)
 
-Got a server running this plugin? Feel free to post about it below.
+Got a server running this plugin? Feel free to post about it below. Also check out
+[Top HCSMP](http://tophcsmp.com/index.php?cat=APOC) for other apocalypse servers,
+which may or may not be running RadioBeacon or related plugins.
 
 Reviews of RadioBeacon:
 
