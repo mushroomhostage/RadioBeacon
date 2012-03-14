@@ -121,11 +121,13 @@ Subcommands:
 ## See Also
 Servers running RadioBeacon:
 
-* [Solitude - An Apocalypse Server (Blocktopia)](http://blocktopia.net/forum/threads/solitude-an-apocalypse-server.4712/)
+* [Solitude at Blocktopia](http://blocktopia.net/forum/forums/solitude.137/)
 * [Survivocolypse](http://www.survivocolypse.com/)
+* [Mortuus Terra](http://mortuusterra.com/)
+* [ExpHC](http://www.reddit.com/r/cakesminerapocalypse/comments/qfh0v/exphc_new_experimental_hardcore_apocalypse_server/)
 
 Got a server running this plugin? Feel free to post about it below. Also check out
-[Top HCSMP](http://tophcsmp.com/index.php?cat=APOC) for other apocalypse servers,
+[Top HCSMP](http://tophcsmp.com/index.php?cat=APOC) and [this list](http://www.reddit.com/r/cakesminerapocalypse/comments/q0hh2/list_of_apocalypsehardcore_servers/) for other apocalypse servers,
 which may or may not be running RadioBeacon or related plugins.
 
 Reviews of RadioBeacon:
@@ -141,4 +143,3 @@ Other plugins:
  ([notes](http://www.reddit.com/r/minerapocalypse/comments/oyhpq/anyone_else_see_this_plugin_apocalypsecraft/))
 
 ***[Fork me on GitHub](https://github.com/mushroomhostage/RadioBeacon)***
-
