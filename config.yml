@@ -46,5 +46,7 @@ mobileLeftClickTuneUp: true
 mobileShiftTune: false
 mobileSetCompassTarget: true
 mobileSignalLock: true
+mobileNoSignalsMessage: 'No radio beacon signals within %d m'
+#mobileNoSignalsMessage: ''
 
 verbose: true

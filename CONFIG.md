@@ -153,5 +153,9 @@ is required. At least one should be enabled.
 **mobileSignalLock**: Set to false to disable locking onto nearby signals. When disabled, you'll still be able to receive signals
 with a compass, but their distance and the "locked on" message will no longer be shown.
 
+**mobileNoSignalsMessage**: Message to display when the periodic scan completes but no radio beacon signals
+are picked up. "%d" is replaced with the reception radius. Set to null or an empty string to disable this message.
+
+
 ## Debugging
 **verbose**: If true, detailed information will be logged using log.info(). 

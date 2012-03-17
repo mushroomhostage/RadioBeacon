@@ -492,7 +492,9 @@ class Antenna implements Comparable<Antenna> {
 
         count = nearbyAnts.size();
         if (count == 0) {
-            player.sendMessage("No signals within " + receptionRadius + " m");
+            if (AntennaConf.mobileNoSignalsMessage != null && !AntennaConf.mobileNoSignalsMessage.equals("")) {
+                player.sendMessage(AntennaConf.mobileNoSignalsMessage.replace("%d", ""+receptionRadius));
+            }
         } else if (signalLock) {
             if (AntennaConf.mobileSignalLock) {
                 // Player radio compass targetting
@@ -1033,6 +1035,7 @@ class AntennaConf {
     static int mobileScanBonusMaxRadius;
     static boolean mobileSetCompassTarget;
     static boolean mobileSignalLock;
+    static String mobileNoSignalsMessage;
 
     static boolean verbose;
 
@@ -1128,6 +1131,7 @@ class AntennaConf {
         mobileScanBonusMaxRadius = plugin.getConfig().getInt("mobileScanBonusMaxRadius", 0);
         mobileSetCompassTarget = plugin.getConfig().getBoolean("mobileSetCompassTarget", true);
         mobileSignalLock = plugin.getConfig().getBoolean("mobileSignalLock", true);
+        mobileNoSignalsMessage = plugin.getConfig().getString("mobileNoSignalsMessage", "No signals within %d m");
 
         verbose = plugin.getConfig().getBoolean("verbose", true);
         
