@@ -110,6 +110,9 @@ before the antenna updates itself.
 
 
 ## Mobile Compass Radios
+**mobileRadioItem**: The [item ID](http://www.minecraftwiki.net/wiki/Data_values) used for
+mobile radios. Defaults to a compass (345).
+
 **mobileInitialRadius**: The "reception radius" in meters when you hold a single compass.
 0 means you must be directly within the spherical radius of the transmitting antenna, anything higher
 allows you to receive signals when further away (beyond the normal radius). 

@@ -420,7 +420,7 @@ class Antenna implements Comparable<Antenna> {
     static public void receiveSignalsAtPlayer(Player player) {
         ItemStack item = player.getItemInHand();
 
-        if (item == null || item.getType() != Material.COMPASS && AntennaPlayerListener.playerRadioEnabled(player)) {
+        if (item == null || item.getTypeId() != AntennaConf.mobileRadioItem && AntennaPlayerListener.playerRadioEnabled(player)) {
             // Compass = mobile radio
             return;
         }
@@ -896,7 +896,7 @@ class AntennaPlayerListener implements Listener {
             }
 
             // TODO: and if click anywhere within antenna? maybe not unless holding compass
-        } else if (item != null && item.getType() == Material.COMPASS && AntennaPlayerListener.playerRadioEnabled(player)) {
+        } else if (item != null && item.getTypeId() == AntennaConf.mobileRadioItem && AntennaPlayerListener.playerRadioEnabled(player)) {
             if (AntennaConf.mobileShiftTune) {
                 // hold Shift + click to tune
                 if (!player.isSneaking()) { 
@@ -941,7 +941,7 @@ class AntennaPlayerListener implements Listener {
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItem(event.getNewSlot());
 
-        if (item != null && item.getType() == Material.COMPASS && AntennaPlayerListener.playerRadioEnabled(player)) {
+        if (item != null && item.getTypeId() == AntennaConf.mobileRadioItem && AntennaPlayerListener.playerRadioEnabled(player)) {
             // TODO: this actually doesn't receive signals on change, since this method checks
             // the player's items in hand, and the event is called before they actually change -
             // but, I actually like this design better since the player has to wait to receive.
@@ -969,7 +969,7 @@ class ReceptionTask implements Runnable {
         for (Player player: Bukkit.getOnlinePlayers()) {
             ItemStack item = player.getItemInHand();
 
-            if (item != null && item.getType() == Material.COMPASS && AntennaPlayerListener.playerRadioEnabled(player)) {
+            if (item != null && item.getTypeId() == AntennaConf.mobileRadioItem && AntennaPlayerListener.playerRadioEnabled(player)) {
                // if scan increase is enabled, increment scan # each scan 
                 if (AntennaConf.mobileScanBonusRadius != 0) {   
                     Integer scanBonusObject = AntennaPlayerListener.playerScanBonus.get(player);
@@ -1021,6 +1021,7 @@ class AntennaConf {
     static boolean fixedDenyAddMessageBreak;
     static String fixedDenyAddMessageMessage;
 
+    static int mobileRadioItem;
     static int mobileInitialRadius;
     static int mobileIncreaseRadius;
     static int mobileMaxRadius;
@@ -1107,7 +1108,7 @@ class AntennaConf {
         fixedUnpoweredNagMessage = plugin.getConfig().getString("fixedUnpoweredNagMessage", "Tip: remove and place this block near redstone current to build an antenna");
 
 
-
+        mobileRadioItem = plugin.getConfig().getInt("mobileRadioItem", Material.COMPASS.getId());
         mobileInitialRadius = plugin.getConfig().getInt("mobileInitialRadius", 0);
         mobileIncreaseRadius = plugin.getConfig().getInt("mobileIncreaseRadius", 10);
         mobileMaxRadius = plugin.getConfig().getInt("mobileMaxRadius", 10000);

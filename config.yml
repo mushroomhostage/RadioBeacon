@@ -32,6 +32,7 @@ fixedDenyAddMessageBreak: true
 fixedDenyAddMessageMessage: 'Sorry, you do not have permission to add transmission messages'
 #fixedDenyAddMessageMessage: ''
 
+mobileRadioItem: 345
 mobileInitialRadius: 0
 mobileIncreaseRadius: 10
 mobileMaxRadius: 10000

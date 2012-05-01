@@ -1,3 +1,6 @@
+2012-04-30  1.2
+    * Add configurable mobileRadioItem to change item used for radios (compass)
+
 2012-03-09  1.1.2
     * Add /toggleradio for players to turn off their portable compass radio
     * Ignore saved antennas from worlds not loaded
