@@ -121,10 +121,11 @@ Subcommands:
 ## See Also
 Servers running RadioBeacon:
 
-* [Solitude at Blocktopia](http://blocktopia.net/forum/forums/solitude.137/)
+* [Solitude at Blocktopia](http://blocktopia.net/forum/forums/solitude.137/) (defunct)
 * [Survivocolypse](http://www.survivocolypse.com/)
 * [Mortuus Terra](http://mortuusterra.com/)
 * [ExpHC](http://www.reddit.com/r/cakesminerapocalypse/comments/qfh0v/exphc_new_experimental_hardcore_apocalypse_server/)
+* [Do What Thou Wilt](http://forums.bukkit.org/threads/do-what-thou-wilt.59867/)
 
 Got a server running this plugin? Feel free to post about it below. Also check out
 [Top HCSMP](http://tophcsmp.com/index.php?cat=APOC) and [this list](http://www.reddit.com/r/cakesminerapocalypse/comments/q0hh2/list_of_apocalypsehardcore_servers/) for other apocalypse servers,
@@ -139,7 +140,8 @@ Other plugins:
 
 * [Cake's Miner Apocalypse](http://dev.bukkit.org/server-mods/cakes-miner-apocalypse/) - a significant inspiration for RadioBeacon, with a somewhat different realization of radios; also includes many other apocalypse-related features
 
-* [ApocalypseCraft](http://forums.bukkit.org/threads/wgen-rpg-mech-apocalypsecraft-instances-radiation-realism-perks-factions-and-more.23197/) - 
- ([notes](http://www.reddit.com/r/minerapocalypse/comments/oyhpq/anyone_else_see_this_plugin_apocalypsecraft/))
+* [ApocalypseCraft](http://forums.bukkit.org/threads/wgen-rpg-mech-apocalypsecraft-instances-radiation-realism-perks-factions-and-more.23197/) - ([notes](http://www.reddit.com/r/minerapocalypse/comments/oyhpq/anyone_else_see_this_plugin_apocalypsecraft/))
+
+* [RealisticChat](http://dev.bukkit.org/server-mods/realisticchat) - walkie-talkies
 
 ***[Fork me on GitHub](https://github.com/mushroomhostage/RadioBeacon)***
