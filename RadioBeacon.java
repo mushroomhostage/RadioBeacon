@@ -443,7 +443,7 @@ class Antenna implements Comparable<Antenna> {
 
         // If scan bonus enabled, add 
         if (AntennaConf.mobileScanBonusRadius != 0) {
-            Integer bonusObject = AntennaPlayerListener.playerScanBonus.get(player);
+            Integer bonusObject = AntennaPlayerListener.playerScanBonus.get(player.getUniqueId());
             if (bonusObject != null) {
                 receptionRadius += bonusObject.intValue();
             }
@@ -845,17 +845,20 @@ class AntennaBlockListener implements Listener {
 class AntennaPlayerListener implements Listener {
     RadioBeacon plugin;
 
+    // Note, using UUID instead of Player for HashMap for reasons on
+    // https://github.com/Bukkit/CraftBukkit/commit/2ae0b94ecf4f168a65f585b802b1f886a6cd7e32#-P0
+
     // Compass targets index selection
-    static ConcurrentHashMap<Player, Integer> playerTargets = new ConcurrentHashMap<Player, Integer>();
+    static ConcurrentHashMap<UUID, Integer> playerTargets = new ConcurrentHashMap<UUID, Integer>();
 
     // How many scan iterations the player has faithfully held onto their compass for
-    static ConcurrentHashMap<Player, Integer> playerScanBonus = new ConcurrentHashMap<Player, Integer>();
+    static ConcurrentHashMap<UUID, Integer> playerScanBonus = new ConcurrentHashMap<UUID, Integer>();
 
     // Whether player portable radio has been disabled using /toggleradio
-    static ConcurrentHashMap<Player, Boolean> playerDisabled = new ConcurrentHashMap<Player, Boolean>();
+    static ConcurrentHashMap<UUID, Boolean> playerDisabled = new ConcurrentHashMap<UUID, Boolean>();
 
     static boolean playerRadioEnabled(Player player) {
-        Boolean disabledObject = AntennaPlayerListener.playerDisabled.get(player);
+        Boolean disabledObject = AntennaPlayerListener.playerDisabled.get(player.getUniqueId());
         boolean disabled = false;
         if (disabledObject != null) {
             disabled = disabledObject.booleanValue();
@@ -905,10 +908,10 @@ class AntennaPlayerListener implements Listener {
             }
 
             // Increment target index
-            Integer targetInteger = playerTargets.get(player);
+            Integer targetInteger = playerTargets.get(player.getUniqueId());
             int targetInt;
             if (targetInteger == null) {
-                playerTargets.put(player, 0);
+                playerTargets.put(player.getUniqueId(), 0);
                 targetInt = 0;
             } else {
                 // Tune up or down
@@ -928,7 +931,7 @@ class AntennaPlayerListener implements Listener {
                 // TODO: show direction in message?
 
                 targetInt = targetInteger.intValue() + delta;
-                playerTargets.put(player, targetInt);
+                playerTargets.put(player.getUniqueId(), targetInt);
             }
             int receptionRadius = Antenna.getCompassRadius(item, player);
             player.sendMessage("Tuned radio" + (receptionRadius == 0 ? "" : " (range " + receptionRadius + " m)"));
@@ -949,7 +952,7 @@ class AntennaPlayerListener implements Listener {
         } else {    
             // if scan increase is enabled, changing items resets scan bonus
             if (AntennaConf.mobileScanBonusRadius != 0) { 
-                playerScanBonus.put(player, 0);
+                playerScanBonus.put(player.getUniqueId(), 0);
             }
         }
     } 
@@ -972,13 +975,13 @@ class ReceptionTask implements Runnable {
             if (item != null && item.getTypeId() == AntennaConf.mobileRadioItem && AntennaPlayerListener.playerRadioEnabled(player)) {
                // if scan increase is enabled, increment scan # each scan 
                 if (AntennaConf.mobileScanBonusRadius != 0) {   
-                    Integer scanBonusObject = AntennaPlayerListener.playerScanBonus.get(player);
+                    Integer scanBonusObject = AntennaPlayerListener.playerScanBonus.get(player.getUniqueId());
                     int scanBonus = scanBonusObject == null ? 0 : scanBonusObject.intValue();
 
                     int newScanBonus = scanBonus + AntennaConf.mobileScanBonusRadius;
                     newScanBonus = Math.min(newScanBonus, AntennaConf.mobileScanBonusMaxRadius);
 
-                    AntennaPlayerListener.playerScanBonus.put(player, newScanBonus);
+                    AntennaPlayerListener.playerScanBonus.put(player.getUniqueId(), newScanBonus);
                 }
 
 
@@ -1421,7 +1424,7 @@ public class RadioBeacon extends JavaPlugin {
                 return true;
             }
 
-            Boolean obj = AntennaPlayerListener.playerDisabled.get(player);
+            Boolean obj = AntennaPlayerListener.playerDisabled.get(player.getUniqueId());
             boolean newState;
             if (obj == null) {
                 newState = true;
@@ -1429,7 +1432,7 @@ public class RadioBeacon extends JavaPlugin {
                 newState = !obj.booleanValue();
             }
 
-            AntennaPlayerListener.playerDisabled.put(player, newState);
+            AntennaPlayerListener.playerDisabled.put(player.getUniqueId(), newState);
             
             sender.sendMessage(ChatColor.GREEN + "Toggled radio "+(newState ? "off" : "on"));
             
