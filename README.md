@@ -19,6 +19,8 @@ Works great on "random spawn point" (solitude/apocalypse) themed servers.
 * Relay antennas for retransmitting messages
 * Multi-world aware
 
+[Forum thread](http://forums.bukkit.org/threads/mech-fun-rpg-radiobeacon-v1-2-5-build-radio-towers-navigate-using-compasses-1-2-5-r2-0.76443/)
+
 # Usage
 
 ### Fixed Antenna Towers
