@@ -498,7 +498,7 @@ class Antenna implements Comparable<Antenna> {
         } else if (signalLock) {
             if (AntennaConf.mobileSignalLock) {
                 // Player radio compass targetting
-                Integer targetInteger = AntennaPlayerListener.playerTargets.get(player);
+                Integer targetInteger = AntennaPlayerListener.playerTargets.get(player.getUniqueId());
                 Location targetLoc;
                 int targetInt;
                 if (targetInteger == null) {
