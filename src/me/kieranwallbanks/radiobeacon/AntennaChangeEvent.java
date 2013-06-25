@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Mushroom Hostage
+Copyright (c) 2012, Mushroom Hostage & kezz101
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,10 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package net.SimplePlugins.RadioBeacon;
+package me.kieranwallbanks.radiobeacon;
 
-import org.bukkit.event.*;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
 public class AntennaChangeEvent extends Event {
     private final Antenna antenna;

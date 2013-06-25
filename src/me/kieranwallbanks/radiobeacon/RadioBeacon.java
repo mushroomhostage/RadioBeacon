@@ -1,7 +1,7 @@
 /*
 http://dev.bukkit.org/server-mods/radiobeacon/
 
-Copyright (c) 2012, Mushroom Hostage
+Copyright (c) 2012, Mushroom Hostage & kezz101
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package net.SimplePlugins.RadioBeacon;
+package me.kieranwallbanks.radiobeacon;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,7 +69,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 // 2D integral location (unlike Bukkit's location)
-class AntennaXZ implements Comparable {
+class AntennaXZ implements Comparable<AntennaXZ> {
     World world;
     int x, z;
 
@@ -93,12 +93,8 @@ class AntennaXZ implements Comparable {
         return x + "," + z;
     }
 
-    public int compareTo(Object obj) {
-        if (!(obj instanceof AntennaXZ)) {
-            return -1;
-        }
-        AntennaXZ rhs = (AntennaXZ)obj;
-
+    @Override
+    public int compareTo(AntennaXZ rhs) {
         if (!world.equals(rhs.world)) {
             return world.getName().compareTo(rhs.world.getName());
         }
@@ -113,7 +109,7 @@ class AntennaXZ implements Comparable {
     }
 
     public boolean equals(Object obj) {
-        return compareTo(obj) == 0;      // why do I have to do this myself?
+        return compareTo((AntennaXZ) obj) == 0;      // why do I have to do this myself?
     }
 
     public int hashCode() {
@@ -714,7 +710,7 @@ class AntennaBlockListener implements Listener {
                 return;
             }
 
-            ant.destroy(ant);
+            Antenna.destroy(ant);
             event.getPlayer().sendMessage("Destroyed antenna");
         } else if (block.getType() == AntennaConf.fixedAntennaMaterial) {
             Antenna ant = Antenna.getAntenna(block.getLocation());
