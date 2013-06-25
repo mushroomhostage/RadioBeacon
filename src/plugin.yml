@@ -1,6 +1,6 @@
 name: RadioBeacon
-main: me.exphc.RadioBeacon.RadioBeacon
-version: 1.2.6
+main: me.kieranwallbanks.radiobeacon.RadioBeacon
+version: 1.3
 description: build radio towers, navigate to them using compasses
 url: http://dev.bukkit.org/server-mods/radiobeacon/
 commands: 

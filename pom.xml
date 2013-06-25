@@ -27,6 +27,7 @@
   
   <build>
     <sourceDirectory>src</sourceDirectory>
+    <finalName>RadioBeacon</finalName>
 
     <resources>
       <resource>
