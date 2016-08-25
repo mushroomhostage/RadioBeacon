@@ -1,7 +1,7 @@
 /*
 http://dev.bukkit.org/server-mods/radiobeacon/
 
-Copyright (c) 2012, Mushroom Hostage
+Copyright (c) 2012, Mushroom Hostage & kezz101
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,40 +27,49 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package me.exphc.RadioBeacon;
+package me.kieranwallbanks.radiobeacon;
 
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.UUID;
-import java.util.Iterator;
-import java.util.logging.Logger;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.io.*;
+import java.util.logging.Logger;
 
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.*;
-import org.bukkit.event.*;
-import org.bukkit.event.block.*;
-import org.bukkit.event.player.*;
-import org.bukkit.event.weather.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.Material.*;
-import org.bukkit.block.*;
-import org.bukkit.entity.*;
-import org.bukkit.command.*;
-import org.bukkit.inventory.*;
-import org.bukkit.configuration.*;
-import org.bukkit.configuration.file.*;
-import org.bukkit.*;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.weather.LightningStrikeEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 // 2D integral location (unlike Bukkit's location)
-class AntennaXZ implements Comparable {
+class AntennaXZ implements Comparable<AntennaXZ> {
     World world;
     int x, z;
 
@@ -84,12 +93,8 @@ class AntennaXZ implements Comparable {
         return x + "," + z;
     }
 
-    public int compareTo(Object obj) {
-        if (!(obj instanceof AntennaXZ)) {
-            return -1;
-        }
-        AntennaXZ rhs = (AntennaXZ)obj;
-
+    @Override
+    public int compareTo(AntennaXZ rhs) {
         if (!world.equals(rhs.world)) {
             return world.getName().compareTo(rhs.world.getName());
         }
@@ -104,7 +109,7 @@ class AntennaXZ implements Comparable {
     }
 
     public boolean equals(Object obj) {
-        return compareTo(obj) == 0;      // why do I have to do this myself?
+        return compareTo((AntennaXZ) obj) == 0;      // why do I have to do this myself?
     }
 
     public int hashCode() {
@@ -705,7 +710,7 @@ class AntennaBlockListener implements Listener {
                 return;
             }
 
-            ant.destroy(ant);
+            Antenna.destroy(ant);
             event.getPlayer().sendMessage("Destroyed antenna");
         } else if (block.getType() == AntennaConf.fixedAntennaMaterial) {
             Antenna ant = Antenna.getAntenna(block.getLocation());
@@ -1453,7 +1458,7 @@ public class RadioBeacon extends JavaPlugin {
         boolean reveal = !(sender instanceof Player) || ((Player)sender).hasPermission("radiobeacon.reveal");
 
         for (Map.Entry<AntennaXZ,Antenna> pair : Antenna.xz2Ant.entrySet()) {
-            AntennaXZ xz = pair.getKey();
+            //AntennaXZ xz = pair.getKey();
             Antenna ant = pair.getValue();
 
             if (reveal) {
